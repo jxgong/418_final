@@ -13,12 +13,4 @@ There are many different parts of this problem that can be parallelized. As ment
 ### Platform Choice:
 We'll use the GHC cluster machines to run our simulations. The GHC cluster computers have 8 Intel processors and NVIDIA GeForce GTX 1080 GPUs
 ## Schedule:
-| Week  | Task                                         |
-|-------|----------------------------------------------|
-| 10/27 | Finish Project Proposal                      |
-| 11/3  | Sequential Simulator with Fuel ignition      |
-| 11/10 | Naive Parallel Sim for updating particles    |
-| 11/17 | Optimize Parallelism, start doing visualizer |
-| 11/24 | Finish visualizer                            |
-| 12/1  | Polish                                       |
-| 12/8  | Poster                                       |
+![alt text](https://raw.githubusercontent.com/jxgong/fuel_ignition_simulator/master/schedule.jpg)
