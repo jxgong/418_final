@@ -1,6 +1,6 @@
 # Title
 #### Jason Gong, Fernando Melean
-## Project URL: 
+## Project URL: https://jxgong.github.io/fuel_ignition_simulator/
 ## Summary:
 We are going to parallelize simulations of fuel ignition and flame propagation simulate using a GPU.
 ## Background:
