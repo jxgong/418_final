@@ -25,3 +25,13 @@ Our demo should include our visualizer of the fuel ignition. We will also show s
 We'll use the GHC cluster machines to run our simulations. The GHC cluster computers have 8 Intel processors and NVIDIA GeForce GTX 1080 GPUs
 ## Schedule:
 ![alt text](https://raw.githubusercontent.com/jxgong/fuel_ignition_simulator/master/schedule.jpg)
+
+## Checkpoint 2019-11-21
+Progress on the project has been disappointing so far. Fluid dynamics is a complicated topic and learning the equations needed takes a lot of mathematical and chemistry background that was difficult to understand and took a long time to learn. The progress we did make was mostly sequential and we haven't done much optimization.
+
+We've managed to implement basic conservation of mass and conservation of momentum in our simulate step. Most of our other progress was based around understanding fluid dynamics. Despite this setback, our deliverables should remain largely the same. Specifically, we will still get a sequential and parallel implementation of the CFD, and we'll still present a few speedup graphs for the speedup. However, we may not have time for the visualizer, and we may not be able to achieve as much speedup as we initially desired.
+
+We plan to show speedup graphs at the speedup session, and if we manage to get a basic visualizer working, we may be able to show a demo as well.
+
+Concerns at this point include time management, the fact that I (Jason) still haven't really gotten the concepts needed for fluid dynamics.
+
