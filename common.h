@@ -3,7 +3,9 @@
 class Node
 {
     public:
-        float m_air, m_fuel, m_co2, m_nox, temp, u, v, w;
+        float rho_air, rho_fuel, rho_co2, rho_nox, pressure; // physical properties
+        float u, v, w; // dynamic properties
+        float get_rho();
 };
 
 
@@ -13,6 +15,14 @@ struct StartupOptions
     float length, width, height;
     std::string inputFile = "input.txt";
     bool checkCorrectness = true;
+};
+
+class stepParams{
+    public:
+        int length, width, depth;
+        float dt, dx, dy, dz;
+        vector<int> sparks;
+        vector<Node> valves;
 };
 
 StartupOptions parseOptions(int argc, char *argv[]);
