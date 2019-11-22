@@ -1,10 +1,9 @@
 #include <string>
-#include <vector>
 
 class Node
 {
     public:
-        float rho_air, rho_fuel, rho_co2, rho_nox, pressure, temperature, viscocity; // physical properties
+        float rho_air, rho_fuel, rho_co2, rho_nox, pressure, temperature, viscosity; // physical properties
         float u, v, w; // dynamic properties
         float get_rho();
 
