@@ -90,115 +90,96 @@ void simulateStep(std::vector<Node>& new_nodes,
                 drhodt = -(node.rho_nox*(dudx+dvdy+dwdz)+drhodx*(node.u+node.v+node.w));
                 next_node.rho_nox = node.rho_nox + drhodt * deltat;
 
-                int r0,r1,c0,c1;
-                r0 = i > 0 ? i-1 : i;
-                r1 = i < length-1 ? i+1 : i;
-                c0 = j > 0 ? j-1 : j;
-                c1 = j < width-1 ? j+1 : j;
-                float d2udxdy = nodes[dim2Index(r0,c0,k,length,width)].u
-                              - nodes[dim2Index(r0,c1,k,length,width)].u
-                              - nodes[dim2Index(r1,c0,k,length,width)].u
-                              + nodes[dim2Index(r1,c1,k,length,width)].u;
-                d2udxdy /= (((float) ((r1-r0)*(c1-c0))) * deltax * deltay);
-                float d2vdxdy = nodes[dim2Index(r0,c0,k,length,width)].v
-                              - nodes[dim2Index(r0,c1,k,length,width)].v
-                              - nodes[dim2Index(r1,c0,k,length,width)].v
-                              + nodes[dim2Index(r1,c1,k,length,width)].v;
-                d2vdxdy /= (((float) ((r1-r0)*(c1-c0))) * deltax * deltay);
-                float d2wdxdy = nodes[dim2Index(r0,c0,k,length,width)].w
-                              - nodes[dim2Index(r0,c1,k,length,width)].w
-                              - nodes[dim2Index(r1,c0,k,length,width)].w
-                              + nodes[dim2Index(r1,c1,k,length,width)].w;
-                d2wdxdy /= (((float) ((r1-r0)*(c1-c0))) * deltax * deltay);
+                Node *r0c0 = nghbrs[nghbrsInd(-1,-1,0)];
+                Node *r0c1 = nghbrs[nghbrsInd(-1,1,0)];
+                Node *r1c0 = nghbrs[nghbrsInd(1,-1,0)];
+                Node *r1r1 = nghbrs[nghbrsInd(1,1,0)];
 
-                r0 = i > 0 ? i-1 : i;
-                r1 = i < length-1 ? i+1 : i;
-                c0 = k > 0 ? k-1 : k;
-                c1 = k < depth-1 ? k+1 : k;
-                float d2udxdz = nodes[dim2Index(r0,j,c0,length,width)].u
-                              - nodes[dim2Index(r0,j,c1,length,width)].u
-                              - nodes[dim2Index(r1,j,c0,length,width)].u
-                              + nodes[dim2Index(r1,j,c1,length,width)].u;
-                d2udxdz /= (((float) ((r1-r0)*(c1-c0))) * deltax * deltaz);
-                float d2vdxdz = nodes[dim2Index(r0,j,c0,length,width)].v
-                              - nodes[dim2Index(r0,j,c1,length,width)].v
-                              - nodes[dim2Index(r1,j,c0,length,width)].v
-                              + nodes[dim2Index(r1,j,c1,length,width)].v;
-                d2vdxdz /= (((float) ((r1-r0)*(c1-c0))) * deltax * deltaz);
-                float d2wdxdz = nodes[dim2Index(r0,j,c0,length,width)].w
-                              - nodes[dim2Index(r0,j,c1,length,width)].w
-                              - nodes[dim2Index(r1,j,c0,length,width)].w
-                              + nodes[dim2Index(r1,j,c1,length,width)].w;
-                d2wdxdz /= (((float) ((r1-r0)*(c1-c0))) * deltax * deltaz);
+                float d2udxdy = (r0c0 ? r0c0.u : 0.f)
+                              - (r0c1 ? r0c1.u : 0.f)
+                              - (r1c0 ? r1c0.u : 0.f)
+                              + (r1c1 ? r1c1.u : 0.f);
+                d2udxdy /= (4.f * deltax * deltay);
+                float d2vdxdy = (r0c0 ? r0c0.v : 0.f)
+                              - (r0c1 ? r0c1.v : 0.f)
+                              - (r1c0 ? r1c0.v : 0.f)
+                              + (r1c1 ? r1c1.v : 0.f);
+                d2vdxdy /= (4.f * deltax * deltay);
+                float d2wdxdy = (r0c0 ? r0c0.w : 0.f)
+                              - (r0c1 ? r0c1.w : 0.f)
+                              - (r1c0 ? r1c0.w : 0.f)
+                              + (r1c1 ? r1c1.w : 0.f);
+                d2wdxdy /= (4.f * deltax * deltay);
 
-                r0 = j > 0 ? j-1 : j;
-                r1 = j < width-1 ? j+1 : j;
-                c0 = k > 0 ? k-1 : k;
-                c1 = k < depth-1 ? k+1 : k;
-                float d2udydz = nodes[dim2Index(i,r0,c0,length,width)].u
-                              - nodes[dim2Index(i,r0,c1,length,width)].u
-                              - nodes[dim2Index(i,r1,c0,length,width)].u
-                              + nodes[dim2Index(i,r1,c1,length,width)].u;
-                d2udxdz /= (((float) ((r1-r0)*(c1-c0))) * deltay * deltaz);
-                float d2vdydz = nodes[dim2Index(i,r0,c0,length,width)].v
-                              - nodes[dim2Index(i,r0,c1,length,width)].v
-                              - nodes[dim2Index(i,r1,c0,length,width)].v
-                              + nodes[dim2Index(i,r1,c1,length,width)].v;
-                d2vdxdz /= (((float) ((r1-r0)*(c1-c0))) * deltay * deltaz);
-                float d2wdydz = nodes[dim2Index(i,r0,c0,length,width)].w
-                              - nodes[dim2Index(i,r0,c1,length,width)].w
-                              - nodes[dim2Index(i,r1,c0,length,width)].w
-                              + nodes[dim2Index(i,r1,c1,length,width)].w;
-                d2wdydz /= (((float) ((r1-r0)*(c1-c0))) * deltay * deltaz);
+                Node *r0c0 = nghbrs[nghbrsInd(-1,0,-1)];
+                Node *r0c1 = nghbrs[nghbrsInd(-1,0,1)];
+                Node *r1c0 = nghbrs[nghbrsInd(1,0,-1)];
+                Node *r1r1 = nghbrs[nghbrsInd(1,0,1)];
+                float d2udxdz = (r0c0 ? r0c0.u : 0.f)
+                              - (r0c1 ? r0c1.u : 0.f)
+                              - (r1c0 ? r1c0.u : 0.f)
+                              + (r1c1 ? r1c1.u : 0.f);
+                d2udxdz /= (4.f * deltax * deltaz);
+                float d2vdxdz = (r0c0 ? r0c0.v : 0.f)
+                              - (r0c1 ? r0c1.v : 0.f)
+                              - (r1c0 ? r1c0.v : 0.f)
+                              + (r1c1 ? r1c1.v : 0.f);
+                d2vdxdz /= (4.f * deltax * deltaz);
+                float d2wdxdz = (r0c0 ? r0c0.w : 0.f)
+                              - (r0c1 ? r0c1.w : 0.f)
+                              - (r1c0 ? r1c0.w : 0.f)
+                              + (r1c1 ? r1c1.w : 0.f);
+                d2wdxdz /= (4.f * deltax * deltaz);
 
-                float d2udx2 = 0.f, d2vdx2 = 0.f , d2wdx2 = 0.f;
-                if (i > 0 || i < length-1){
-                    r0 = i == 0 ? i : (i == length-1 ? i-2 : i-1);
-                    d2udx2 += nodes[dim2Index(r0,j,k,length,width)].u;
-                    d2udx2 -= 2.f * nodes[dim2Index(r0+1,j,k,length,width)].u;
-                    d2udx2 += nodes[dim2Index(r0+2,j,k,length,width)].u;
-                    d2udx2 /= (deltax * deltax);
-                    d2vdx2 += nodes[dim2Index(r0,j,k,length,width)].v;
-                    d2vdx2 -= 2.f * nodes[dim2Index(r0+1,j,k,length,width)].v;
-                    d2vdx2 += nodes[dim2Index(r0+2,j,k,length,width)].v;
-                    d2vdx2 /= (deltax * deltax);
-                    d2wdx2 += nodes[dim2Index(r0,j,k,length,width)].w;
-                    d2wdx2 -= 2.f * nodes[dim2Index(r0+1,j,k,length,width)].w;
-                    d2wdx2 += nodes[dim2Index(r0+2,j,k,length,width)].w;
-                    d2wdx2 /= (deltax * deltax);
-                }
-                float d2udy2 = 0.f, d2vdy2 = 0.f, d2wdy2 = 0.f;
-                if (j > 0 || j < width-1){
-                    r0 = j == 0 ? j : (j == width-1 ? j-2 : j-1);
-                    d2udy2 += nodes[dim2Index(i,r0,k,length,width)].u;
-                    d2udy2 -= 2.f * nodes[dim2Index(i,r0+1,k,length,width)].u;
-                    d2udy2 += nodes[dim2Index(i,r0+2,k,length,width)].u;
-                    d2udy2 /= (deltay * deltay);
-                    d2vdy2 += nodes[dim2Index(i,r0,k,length,width)].v;
-                    d2vdy2 -= 2.f * nodes[dim2Index(i,r0+1,k,length,width)].v;
-                    d2vdy2 += nodes[dim2Index(i,r0+2,k,length,width)].v;
-                    d2vdy2 /= (deltay * deltay);
-                    d2wdy2 += nodes[dim2Index(i,r0,k,length,width)].w;
-                    d2wdy2 -= 2.f * nodes[dim2Index(i,r0+1,k,length,width)].w;
-                    d2wdy2 += nodes[dim2Index(i,r0+2,k,length,width)].w;
-                    d2wdy2 /= (deltay * deltay);
-                }
-                float d2udz2 = 0.f, d2vdz2 = 0.f, d2wdz2 = 0.f;
-                if (k > 0 || k < depth-1){
-                    r0 = k == 0 ? k : (k == depth-1 ? k-2 : k-1);
-                    d2udz2 += nodes[dim2Index(i,j,r0,length,width)].u;
-                    d2udz2 -= 2.f * nodes[dim2Index(i,j,r0+1,length,width)].u;
-                    d2udz2 += nodes[dim2Index(i,j,r0+2,length,width)].u;
-                    d2udz2 /= (deltaz * deltaz);
-                    d2vdz2 += nodes[dim2Index(i,j,r0,length,width)].v;
-                    d2vdz2 -= 2.f * nodes[dim2Index(i,j,r0+1,length,width)].v;
-                    d2vdz2 += nodes[dim2Index(i,j,r0+2,length,width)].v;
-                    d2vdz2 /= (deltaz * deltaz);
-                    d2wdz2 += nodes[dim2Index(i,j,r0,length,width)].w;
-                    d2wdz2 -= 2.f * nodes[dim2Index(i,j,r0+1,length,width)].w;
-                    d2wdz2 += nodes[dim2Index(i,j,r0+2,length,width)].w;
-                    d2wdz2 /= (deltaz * deltaz);
-                }
+                Node *r0c0 = nghbrs[nghbrsInd(0,-1,-1)];
+                Node *r0c1 = nghbrs[nghbrsInd(0,-1,1)];
+                Node *r1c0 = nghbrs[nghbrsInd(0,1,-1)];
+                Node *r1r1 = nghbrs[nghbrsInd(0,1,1)];
+                float d2udydz = (r0c0 ? r0c0.u : 0.f)
+                              - (r0c1 ? r0c1.u : 0.f)
+                              - (r1c0 ? r1c0.u : 0.f)
+                              + (r1c1 ? r1c1.u : 0.f);
+                d2udydz /= (4.f * deltay * deltaz);
+                float d2vdydz = (r0c0 ? r0c0.v : 0.f)
+                              - (r0c1 ? r0c1.v : 0.f)
+                              - (r1c0 ? r1c0.v : 0.f)
+                              + (r1c1 ? r1c1.v : 0.f);
+                d2vdydz /= (4.f * deltay * deltaz);
+                float d2wdydz = (r0c0 ? r0c0.w : 0.f)
+                              - (r0c1 ? r0c1.w : 0.f)
+                              - (r1c0 ? r1c0.w : 0.f)
+                              + (r1c1 ? r1c1.w : 0.f);
+                d2wdydz /= (4.f * deltay * deltaz);
+
+                Node *r0 = nghbrs[nghbrsInd(-1,0,0)];
+                Node *r1 = nghbrs[nghbrsInd(0,0,0)];
+                Node *r2 = nghbrs[nghbrsInd(1,0,0)];
+                float d2udx2 = (r0 ? r0.u : 0.f) - 2.f * (r1 ? r1.u : 0.f) + (r2 ? r2.u : 0.f);
+                d2udx2 /= (deltax * deltax);
+                float d2vdx2 = (r0 ? r0.v : 0.f) - 2.f * (r1 ? r1.v : 0.f) + (r2 ? r2.v : 0.f);
+                d2vdx2 /= (deltax * deltax);
+                float d2wdx2 = (r0 ? r0.w : 0.f) - 2.f * (r1 ? r1.w : 0.f) + (r2 ? r2.w : 0.f);
+                d2wdx2 /= (deltax * deltax);
+
+                Node *r0 = nghbrs[nghbrsInd(0,-1,0)];
+                Node *r1 = nghbrs[nghbrsInd(0,0,0)];
+                Node *r2 = nghbrs[nghbrsInd(0,1,0)];
+                float d2udy2 = (r0 ? r0.u : 0.f) - 2.f * (r1 ? r1.u : 0.f) + (r2 ? r2.u : 0.f);
+                d2udy2 /= (deltay * deltay);
+                float d2vdy2 = (r0 ? r0.v : 0.f) - 2.f * (r1 ? r1.v : 0.f) + (r2 ? r2.v : 0.f);
+                d2vdy2 /= (deltay * deltay);
+                float d2wdy2 = (r0 ? r0.w : 0.f) - 2.f * (r1 ? r1.w : 0.f) + (r2 ? r2.w : 0.f);
+                d2wdy2 /= (deltay * deltay);
+
+                Node *r0 = nghbrs[nghbrsInd(0,0,-1)];
+                Node *r1 = nghbrs[nghbrsInd(0,0,0)];
+                Node *r2 = nghbrs[nghbrsInd(0,0,1)];
+                float d2udz2 = (r0 ? r0.u : 0.f) - 2.f * (r1 ? r1.u : 0.f) + (r2 ? r2.u : 0.f);
+                d2udz2 /= (deltaz * deltaz);
+                float d2vdx2 = (r0 ? r0.v : 0.f) - 2.f * (r1 ? r1.v : 0.f) + (r2 ? r2.v : 0.f);
+                d2vdz2 /= (deltaz * deltaz);
+                float d2wdx2 = (r0 ? r0.w : 0.f) - 2.f * (r1 ? r1.w : 0.f) + (r2 ? r2.w : 0.f);
+                d2wdz2 /= (deltaz * deltaz);
 
                 float dTxxdx = (2.f*d2udx2 - d2vdxdy - d2wdxdz) * 2.f / 3.f * node.viscocity;
                 float dTyydy = (2.f*d2vdy2 - d2udxdy - d2wdydz) * 2.f / 3.f * node.viscocity;
@@ -211,9 +192,9 @@ void simulateStep(std::vector<Node>& new_nodes,
                 float dTxzdz = (d2udz2 + d2wdxdz) * node.viscosity;
 
                 float dpdx, dpdy, dpdz;
-                first_deriv(dpdx,left,right,p,deltax);
-                first_deriv(dpdy,up,down,p,deltay);
-                first_deriv(dpdz,in,out,p,deltaz);
+                first_deriv(dpdx,nghbrs[nghbrsInd(-1,0,0)],nghbrs[nghbrsInd(1,0,0)],p,deltax);
+                first_deriv(dpdy,nghbrs[nghbrsInd(0,-1,0)],nghbrs[nghbrsInd(0,1,0)],p,deltay);
+                first_deriv(dpdz,nghbrs[nghbrsInd(0,0,-1)],nghbrs[nghbrsInd(0,0,1)],p,deltaz);
 
                 float rho = node.rho_air+node.rho_fuel+node.rho_co2+node.rho_nox;
 
