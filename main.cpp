@@ -48,7 +48,7 @@ void simulateStep(std::vector<Node>& new_nodes,
         for (int j = 0; j < width; j++){
             for (int i = 0; i < length; i++){
                 int index = i + length * (j + width * (k));
-                std::vector<Node *> nghbrs(27,NULL);
+                std::vector<Node*> nghbrs(27,NULL);
                 const Node node = nodes[index];
                 for (int n = 0; n < 27; n++){
                     int x,y,z;
