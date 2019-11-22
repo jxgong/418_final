@@ -3,9 +3,10 @@
 class Node
 {
     public:
-        float rho_air, rho_fuel, rho_co2, rho_nox, pressure; // physical properties
+        float rho_air, rho_fuel, rho_co2, rho_nox, pressure, temperature, viscocity; // physical properties
         float u, v, w; // dynamic properties
         float get_rho();
+
 };
 
 
@@ -20,7 +21,7 @@ struct StartupOptions
 class stepParams{
     public:
         int length, width, depth;
-        float dt, dx, dy, dz;
+        float deltat, deltax, deltay, deltaz;
         vector<int> sparks;
         vector<Node> valves;
 };
