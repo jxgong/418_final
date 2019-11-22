@@ -46,7 +46,7 @@ void simulateStep(std::vector<Node>& new_nodes,
         for (int j = 0; j < width; j++){
             for (int i = 0; i < length; i++){
                 int index = i + length * (j + width * (k));
-                std::vector<Node *> nghbrs(27,NULL);
+                std::vector<Node*> nghbrs(27,NULL);
                 const Node node = nodes[index];
                 for (int n = 0; n < 27; n++){
                     int x,y,z;
@@ -60,7 +60,7 @@ void simulateStep(std::vector<Node>& new_nodes,
                 }
                 Node next_node;
 
-                float dudx, dvdy,dwdz
+                float dudx, dvdy,dwdz, drhodt;
                 first_deriv(dudx,nghbrs[nghbrsInd(-1,0,0)],nghbrs[nghbrsInd(1,0,0)],u,deltax);
                 first_deriv(dvdy,nghbrs[nghbrsInd(0,-1,0)],nghbrs[nghbrsInd(0,1,0)],v,deltay);
                 first_deriv(dwdz,nghbrs[nghbrsInd(0,0,-1)],nghbrs[nghbrsInd(0,0,1)],w,deltaz);
@@ -69,25 +69,25 @@ void simulateStep(std::vector<Node>& new_nodes,
                 first_deriv(drhodx,nghbrs[nghbrsInd(-1,0,0)],nghbrs[nghbrsInd(1,0,0)],rho_air,deltax);
                 first_deriv(drhody,nghbrs[nghbrsInd(0,-1,0)],nghbrs[nghbrsInd(0,1,0)],rho_air,deltay);
                 first_deriv(drhodz,nghbrs[nghbrsInd(0,0,-1)],nghbrs[nghbrsInd(0,0,1)],rho_air,deltaz);
-                drhodt = -(rho_curr*(dudx+dvdy+dwdz)+drhodx*(node.u+node.v+node.w));
+                drhodt = -(node.rho_air*(dudx+dvdy+dwdz)+drhodx*(node.u+node.v+node.w));
                 next_node.rho_air = node.rho_air + drhodt;
                 // update rho_fuel
                 first_deriv(drhodx,nghbrs[nghbrsInd(-1,0,0)],nghbrs[nghbrsInd(1,0,0)],rho_fuel,deltax);
                 first_deriv(drhody,nghbrs[nghbrsInd(0,-1,0)],nghbrs[nghbrsInd(0,1,0)],rho_fuel,deltay);
                 first_deriv(drhodz,nghbrs[nghbrsInd(0,0,-1)],nghbrs[nghbrsInd(0,0,1)],rho_fuel,deltaz);
-                drhodt = -(rho_curr*(dudx+dvdy+dwdz)+drhodx*(node.u+node.v+node.w));
+                drhodt = -(node.rho_fuel*(dudx+dvdy+dwdz)+drhodx*(node.u+node.v+node.w));
                 next_node.rho_fuel = node.rho_fuel + drhodt;
                 // update rho_co2
                 first_deriv(drhodx,nghbrs[nghbrsInd(-1,0,0)],nghbrs[nghbrsInd(1,0,0)],rho_co2,deltax);
                 first_deriv(drhody,nghbrs[nghbrsInd(0,-1,0)],nghbrs[nghbrsInd(0,1,0)],rho_co2,deltay);
                 first_deriv(drhodz,nghbrs[nghbrsInd(0,0,-1)],nghbrs[nghbrsInd(0,0,1)],rho_co2,deltaz);
-                drhodt = -(rho_curr*(dudx+dvdy+dwdz)+drhodx*(node.u+node.v+node.w));
+                drhodt = -(node.rho_co2*(dudx+dvdy+dwdz)+drhodx*(node.u+node.v+node.w));
                 next_node.rho_co2 = node.rho_co2 + drhodt;
                 // update rho_nox
                 first_deriv(drhodx,nghbrs[nghbrsInd(-1,0,0)],nghbrs[nghbrsInd(1,0,0)],rho_nox,deltax);
                 first_deriv(drhody,nghbrs[nghbrsInd(0,-1,0)],nghbrs[nghbrsInd(0,1,0)],rho_nox,deltay);
                 first_deriv(drhodz,nghbrs[nghbrsInd(0,0,-1)],nghbrs[nghbrsInd(0,0,1)],rho_nox,deltaz);
-                drhodt = -(rho_curr*(dudx+dvdy+dwdz)+drhodx*(node.u+node.v+node.w));
+                drhodt = -(node.rho_nox*(dudx+dvdy+dwdz)+drhodx*(node.u+node.v+node.w));
                 next_node.rho_nox = node.rho_nox + drhodt * deltat;
 
                 int r0,r1,c0,c1;
