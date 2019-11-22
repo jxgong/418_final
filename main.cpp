@@ -11,18 +11,18 @@
                     varname = -((prev)->field) / (2.f*(delta));\
                 } \
                 else if (next){ \
-                    varname = ((next)->field) / (2.f*(delta);\
+                    varname = ((next)->field) / (2.f*(delta));\
                 } \
                 else{ \
-                    varneam = 0.f; \
+                    varname = 0.f; \
                 }
 
 #define dim2Index(x,y,z,Lx,Ly) ((x) + ((y)*(Lx)) + ((z)*(Lx)*(Ly)))
 #define nghbrsInd(x,y,z) ((x) + 3 * (y) + 9 * (z))
 
 float temperature(Node &node){
-    return (node->rho_air+node->rho_fuel+node->rho_co2+node->rho_nox) 
-            * 287.05f * node->pressure;
+    return (node.rho_air+node.rho_fuel+node.rho_co2+node.rho_nox)
+            * 287.05f * node.pressure;
 }
 
 float viscocity(float temp){
@@ -31,15 +31,15 @@ float viscocity(float temp){
 
 void simulateStep(std::vector<Node>& new_nodes,
                   const std::vector<Node>& nodes,
-                  const stepParams){
+                  const stepParams params){
 
-    const int length = stepParams.length;
-    const int width = stepParams.width;
-    const int depth = stepParams.depth;
-    const float deltax = stepParams.deltax;
-    const float deltay = stepParams.deltay;
-    const float deltaz = stepParams.deltaz;
-    const float deltat = stepParams.deltat;
+    const int length = params.length;
+    const int width = params.width;
+    const int depth = params.depth;
+    const float deltax = params.deltax;
+    const float deltay = params.deltay;
+    const float deltaz = params.deltaz;
+    const float deltat = params.deltat;
 
     // case of second or later step
     for (int k = 0; k < depth; k++){
