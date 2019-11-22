@@ -3,21 +3,22 @@
 #include <vector>
 #include <math.h>
 
-#define first_deriv(varname,prev,curr,next,field,delta)\
+#define first_deriv(varname,prev,next,field,delta)\
                 if (prev && next){ \
-                    varname = (next->field - prev->field) / (2.f*delta); \
+                    varname = ((next)->field - (prev)->field) / (2.f*(delta)); \
                 } \
                 else if (prev){ \
-                    varname = (curr.field - prev->field) / (delta);\
+                    varname = -((prev)->field) / (2.f*(delta));\
                 } \
                 else if (next){ \
-                    varname = (next->field - curr.field) / (delta);\
+                    varname = ((next)->field) / (2.f*(delta);\
                 } \
                 else{ \
                     varneam = 0.f; \
                 }
 
 #define dim2Index(x,y,z,Lx,Ly) ((x) + ((y)*(Lx)) + ((z)*(Lx)*(Ly)))
+#define nghbrsInd(x,y,z) ((x) + 3 * (y) + 9 * (z))
 
 float temperature(Node &node){
     return (node->rho_air+node->rho_fuel+node->rho_co2+node->rho_nox) 
@@ -45,43 +46,47 @@ void simulateStep(std::vector<Node>& new_nodes,
         for (int j = 0; j < width; j++){
             for (int i = 0; i < length; i++){
                 int index = i + length * (j + width * (k));
+                std::vector<Node *> nghbrs(27,NULL);
                 const Node node = nodes[index];
-                const Node *left = i > 0 ? &nodes[index-1] : NULL;
-                const Node *right = i < length - 1 ? &nodes[index+1] : NULL;
-                const Node *up = j > 0 ? &nodes[index-length] : NULL;
-                const Node *down = j % width < width - 1 ? &nodes[index+length] : NULL;
-                const Node *out = k > 0 ? &nodes[index-length*width] : NULL;
-                const Node *in = k < depth -1 ? &nodes[index+length*width] : NULL;
+                for (int n = 0; n < 27; n++){
+                    int x,y,z;
+                    x = (n % 3) - 1;
+                    y = ((n/3) % 3) - 1;
+                    z = (n/3)/3 - 1;
+                    if (!((x<0 && i<=0)||(y<0 && j<=0)||(z < 0 && k<=0)||
+                          (x>0 && i+1 >= length)||(y>0 && j+1 >= width)||(z>0 && k+1>=depth))){
+                        nghbrs[n] = &nodes[index+x+y*length+z*length*width];
+                    }
+                }
                 Node next_node;
 
                 float dudx, dvdy,dwdz
-                first_deriv(dudx,left,node,right,u,deltax);
-                first_deriv(dvdy,up,node,down,v,deltay); = node.get_dudx(left,right,deltax);
-                float dvdy = node.get_dudx(up,down,deltay);
-                float dwdz = node.get_dwdz(in,out,deltaz);
+                first_deriv(dudx,nghbrs[nghbrsInd(-1,0,0)],nghbrs[nghbrsInd(1,0,0)],u,deltax);
+                first_deriv(dvdy,nghbrs[nghbrsInd(0,-1,0)],nghbrs[nghbrsInd(0,1,0)],v,deltay);
+                first_deriv(dwdz,nghbrs[nghbrsInd(0,0,-1)],nghbrs[nghbrsInd(0,0,1)],w,deltaz);
                 float drhodx, drhody, drhodz;
                 // update rho_air
-                first_deriv(drhodx,left,node,right,rho_air,deltax);
-                first_deriv(drhody,up,node,down,rho_air,deltay);
-                first_deriv(drhodz,out,node,in,rho_air,deltaz);
+                first_deriv(drhodx,nghbrs[nghbrsInd(-1,0,0)],nghbrs[nghbrsInd(1,0,0)],rho_air,deltax);
+                first_deriv(drhody,nghbrs[nghbrsInd(0,-1,0)],nghbrs[nghbrsInd(0,1,0)],rho_air,deltay);
+                first_deriv(drhodz,nghbrs[nghbrsInd(0,0,-1)],nghbrs[nghbrsInd(0,0,1)],rho_air,deltaz);
                 drhodt = -(rho_curr*(dudx+dvdy+dwdz)+drhodx*(node.u+node.v+node.w));
                 next_node.rho_air = node.rho_air + drhodt;
                 // update rho_fuel
-                first_deriv(drhodx,left,node,right,rho_fuel,deltax);
-                first_deriv(drhody,up,node,down,rho_fuel,deltay);
-                first_deriv(drhodz,out,node,in,rho_fuel,deltaz);
+                first_deriv(drhodx,nghbrs[nghbrsInd(-1,0,0)],nghbrs[nghbrsInd(1,0,0)],rho_fuel,deltax);
+                first_deriv(drhody,nghbrs[nghbrsInd(0,-1,0)],nghbrs[nghbrsInd(0,1,0)],rho_fuel,deltay);
+                first_deriv(drhodz,nghbrs[nghbrsInd(0,0,-1)],nghbrs[nghbrsInd(0,0,1)],rho_fuel,deltaz);
                 drhodt = -(rho_curr*(dudx+dvdy+dwdz)+drhodx*(node.u+node.v+node.w));
                 next_node.rho_fuel = node.rho_fuel + drhodt;
                 // update rho_co2
-                first_deriv(drhodx,left,node,right,rho_co2,deltax);
-                first_deriv(drhody,up,node,down,rho_co2,deltay);
-                first_deriv(drhodz,out,node,in,rho_co2,deltaz);
+                first_deriv(drhodx,nghbrs[nghbrsInd(-1,0,0)],nghbrs[nghbrsInd(1,0,0)],rho_co2,deltax);
+                first_deriv(drhody,nghbrs[nghbrsInd(0,-1,0)],nghbrs[nghbrsInd(0,1,0)],rho_co2,deltay);
+                first_deriv(drhodz,nghbrs[nghbrsInd(0,0,-1)],nghbrs[nghbrsInd(0,0,1)],rho_co2,deltaz);
                 drhodt = -(rho_curr*(dudx+dvdy+dwdz)+drhodx*(node.u+node.v+node.w));
                 next_node.rho_co2 = node.rho_co2 + drhodt;
                 // update rho_nox
-                first_deriv(drhodx,left,node,right,rho_nox,deltax);
-                first_deriv(drhody,up,node,down,rho_nox,deltay);
-                first_deriv(drhodz,out,node,in,rho_nox,deltaz);
+                first_deriv(drhodx,nghbrs[nghbrsInd(-1,0,0)],nghbrs[nghbrsInd(1,0,0)],rho_nox,deltax);
+                first_deriv(drhody,nghbrs[nghbrsInd(0,-1,0)],nghbrs[nghbrsInd(0,1,0)],rho_nox,deltay);
+                first_deriv(drhodz,nghbrs[nghbrsInd(0,0,-1)],nghbrs[nghbrsInd(0,0,1)],rho_nox,deltaz);
                 drhodt = -(rho_curr*(dudx+dvdy+dwdz)+drhodx*(node.u+node.v+node.w));
                 next_node.rho_nox = node.rho_nox + drhodt * deltat;
 
@@ -206,9 +211,9 @@ void simulateStep(std::vector<Node>& new_nodes,
                 float dTxzdz = (d2udz2 + d2wdxdz) * node.viscosity;
 
                 float dpdx, dpdy, dpdz;
-                first_deriv(dpdx,left,node,right,p,deltax);
-                first_deriv(dpdy,up,node,down,p,deltay);
-                first_deriv(dpdz,in,node,out,p,deltaz);
+                first_deriv(dpdx,left,right,p,deltax);
+                first_deriv(dpdy,up,down,p,deltay);
+                first_deriv(dpdz,in,out,p,deltaz);
 
                 float rho = node.rho_air+node.rho_fuel+node.rho_co2+node.rho_nox;
 
