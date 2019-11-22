@@ -24,7 +24,7 @@ Our demo should include our visualizer of the fuel ignition. We will also show s
 ### Platform Choice:
 We'll use the GHC cluster machines to run our simulations. The GHC cluster computers have 8 Intel processors and NVIDIA GeForce GTX 1080 GPUs
 ## Schedule:
-![alt text](https://raw.githubusercontent.com/jxgong/fuel_ignition_simulator/master/schedule.jpg)
+![alt text](https://raw.githubusercontent.com/jxgong/fuel_ignition_simulator/master/schedulev1.jpg)
 
 ## Checkpoint 2019-11-21
 Progress on the project has been disappointing so far. Fluid dynamics is a complicated topic and learning the equations needed takes a lot of mathematical and chemistry background that was difficult to understand and took a long time to learn. The progress we did make was mostly sequential and we haven't done much optimization.
