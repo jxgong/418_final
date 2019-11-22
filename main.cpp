@@ -3,6 +3,8 @@
 #include <vector>
 #include <math.h>
 
+#define g 9.81
+
 #define first_deriv(varname,prev,next,field,delta)\
                 if (prev && next){ \
                     varname = ((next)->field - (prev)->field) / (2.f*(delta)); \
@@ -116,7 +118,7 @@ void simulateStep(std::vector<Node>& new_nodes,
                 r0c0 = nghbrs[nghbrsInd(-1,0,-1)];
                 r0c1 = nghbrs[nghbrsInd(-1,0,1)];
                 r1c0 = nghbrs[nghbrsInd(1,0,-1)];
-                r1r1 = nghbrs[nghbrsInd(1,0,1)];
+                r1c1 = nghbrs[nghbrsInd(1,0,1)];
                 float d2udxdz = (r0c0 ? r0c0->u : 0.f)
                               - (r0c1 ? r0c1->u : 0.f)
                               - (r1c0 ? r1c0->u : 0.f)
@@ -136,7 +138,7 @@ void simulateStep(std::vector<Node>& new_nodes,
                 r0c0 = nghbrs[nghbrsInd(0,-1,-1)];
                 r0c1 = nghbrs[nghbrsInd(0,-1,1)];
                 r1c0 = nghbrs[nghbrsInd(0,1,-1)];
-                r1r1 = nghbrs[nghbrsInd(0,1,1)];
+                r1c1 = nghbrs[nghbrsInd(0,1,1)];
                 float d2udydz = (r0c0 ? r0c0->u : 0.f)
                               - (r0c1 ? r0c1->u : 0.f)
                               - (r1c0 ? r1c0->u : 0.f)

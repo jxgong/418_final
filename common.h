@@ -22,8 +22,8 @@ class stepParams{
     public:
         int length, width, depth;
         float deltat, deltax, deltay, deltaz;
-        vector<int> sparks;
-        vector<Node> valves;
+        std::vector<int> sparks;
+        std::vector<Node> valves;
 };
 
 StartupOptions parseOptions(int argc, char *argv[]);
