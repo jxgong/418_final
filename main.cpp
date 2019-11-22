@@ -11,18 +11,18 @@
                     varname = -((prev)->field) / (2.f*(delta));\
                 } \
                 else if (next){ \
-                    varname = ((next)->field) / (2.f*(delta);\
+                    varname = ((next)->field) / (2.f*(delta));\
                 } \
                 else{ \
-                    varneam = 0.f; \
+                    varname = 0.f; \
                 }
 
 #define dim2Index(x,y,z,Lx,Ly) ((x) + ((y)*(Lx)) + ((z)*(Lx)*(Ly)))
 #define nghbrsInd(x,y,z) ((x) + 3 * (y) + 9 * (z))
 
 float temperature(Node &node){
-    return (node->rho_air+node->rho_fuel+node->rho_co2+node->rho_nox) 
-            * 287.05f * node->pressure;
+    return (node.rho_air+node.rho_fuel+node.rho_co2+node.rho_nox)
+            * 287.05f * node.pressure;
 }
 
 float viscocity(float temp){
@@ -31,15 +31,15 @@ float viscocity(float temp){
 
 void simulateStep(std::vector<Node>& new_nodes,
                   const std::vector<Node>& nodes,
-                  const stepParams){
+                  const stepParams params){
 
-    const int length = stepParams.length;
-    const int width = stepParams.width;
-    const int depth = stepParams.depth;
-    const float deltax = stepParams.deltax;
-    const float deltay = stepParams.deltay;
-    const float deltaz = stepParams.deltaz;
-    const float deltat = stepParams.deltat;
+    const int length = params.length;
+    const int width = params.width;
+    const int depth = params.depth;
+    const float deltax = params.deltax;
+    const float deltay = params.deltay;
+    const float deltaz = params.deltaz;
+    const float deltat = params.deltat;
 
     // case of second or later step
     for (int k = 0; k < depth; k++){
@@ -95,17 +95,17 @@ void simulateStep(std::vector<Node>& new_nodes,
                 r1 = i < length-1 ? i+1 : i;
                 c0 = j > 0 ? j-1 : j;
                 c1 = j < width-1 ? j+1 : j;
-                float d2udxdy = nodes[dim2Index(r0,c0,k,length,width)].u 
+                float d2udxdy = nodes[dim2Index(r0,c0,k,length,width)].u
                               - nodes[dim2Index(r0,c1,k,length,width)].u
                               - nodes[dim2Index(r1,c0,k,length,width)].u
                               + nodes[dim2Index(r1,c1,k,length,width)].u;
                 d2udxdy /= (((float) ((r1-r0)*(c1-c0))) * deltax * deltay);
-                float d2vdxdy = nodes[dim2Index(r0,c0,k,length,width)].v 
+                float d2vdxdy = nodes[dim2Index(r0,c0,k,length,width)].v
                               - nodes[dim2Index(r0,c1,k,length,width)].v
                               - nodes[dim2Index(r1,c0,k,length,width)].v
                               + nodes[dim2Index(r1,c1,k,length,width)].v;
                 d2vdxdy /= (((float) ((r1-r0)*(c1-c0))) * deltax * deltay);
-                float d2wdxdy = nodes[dim2Index(r0,c0,k,length,width)].w 
+                float d2wdxdy = nodes[dim2Index(r0,c0,k,length,width)].w
                               - nodes[dim2Index(r0,c1,k,length,width)].w
                               - nodes[dim2Index(r1,c0,k,length,width)].w
                               + nodes[dim2Index(r1,c1,k,length,width)].w;
@@ -115,17 +115,17 @@ void simulateStep(std::vector<Node>& new_nodes,
                 r1 = i < length-1 ? i+1 : i;
                 c0 = k > 0 ? k-1 : k;
                 c1 = k < depth-1 ? k+1 : k;
-                float d2udxdz = nodes[dim2Index(r0,j,c0,length,width)].u 
+                float d2udxdz = nodes[dim2Index(r0,j,c0,length,width)].u
                               - nodes[dim2Index(r0,j,c1,length,width)].u
                               - nodes[dim2Index(r1,j,c0,length,width)].u
                               + nodes[dim2Index(r1,j,c1,length,width)].u;
                 d2udxdz /= (((float) ((r1-r0)*(c1-c0))) * deltax * deltaz);
-                float d2vdxdz = nodes[dim2Index(r0,j,c0,length,width)].v 
+                float d2vdxdz = nodes[dim2Index(r0,j,c0,length,width)].v
                               - nodes[dim2Index(r0,j,c1,length,width)].v
                               - nodes[dim2Index(r1,j,c0,length,width)].v
                               + nodes[dim2Index(r1,j,c1,length,width)].v;
                 d2vdxdz /= (((float) ((r1-r0)*(c1-c0))) * deltax * deltaz);
-                float d2wdxdz = nodes[dim2Index(r0,j,c0,length,width)].w 
+                float d2wdxdz = nodes[dim2Index(r0,j,c0,length,width)].w
                               - nodes[dim2Index(r0,j,c1,length,width)].w
                               - nodes[dim2Index(r1,j,c0,length,width)].w
                               + nodes[dim2Index(r1,j,c1,length,width)].w;
@@ -135,17 +135,17 @@ void simulateStep(std::vector<Node>& new_nodes,
                 r1 = j < width-1 ? j+1 : j;
                 c0 = k > 0 ? k-1 : k;
                 c1 = k < depth-1 ? k+1 : k;
-                float d2udydz = nodes[dim2Index(i,r0,c0,length,width)].u 
+                float d2udydz = nodes[dim2Index(i,r0,c0,length,width)].u
                               - nodes[dim2Index(i,r0,c1,length,width)].u
                               - nodes[dim2Index(i,r1,c0,length,width)].u
                               + nodes[dim2Index(i,r1,c1,length,width)].u;
                 d2udxdz /= (((float) ((r1-r0)*(c1-c0))) * deltay * deltaz);
-                float d2vdydz = nodes[dim2Index(i,r0,c0,length,width)].v 
+                float d2vdydz = nodes[dim2Index(i,r0,c0,length,width)].v
                               - nodes[dim2Index(i,r0,c1,length,width)].v
                               - nodes[dim2Index(i,r1,c0,length,width)].v
                               + nodes[dim2Index(i,r1,c1,length,width)].v;
                 d2vdxdz /= (((float) ((r1-r0)*(c1-c0))) * deltay * deltaz);
-                float d2wdydz = nodes[dim2Index(i,r0,c0,length,width)].w 
+                float d2wdydz = nodes[dim2Index(i,r0,c0,length,width)].w
                               - nodes[dim2Index(i,r0,c1,length,width)].w
                               - nodes[dim2Index(i,r1,c0,length,width)].w
                               + nodes[dim2Index(i,r1,c1,length,width)].w;
