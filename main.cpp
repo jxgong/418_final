@@ -1,5 +1,6 @@
-#include "common.h"
+// #include "common.h"
 #include "physics.h"
+#include "fileio.h"
 #include <vector>
 #include <math.h>
 
@@ -223,5 +224,12 @@ void simulateStep(std::vector<Node>& new_nodes,
 
 int main(int argc, char *argv[]){
     StartupOptions options = parseOptions(argc, argv);
+    std::vector<Node> newNodes;
+    std::vector<Node> nodes = loadFromFile(options.inputFile);
+    stepParams params;
+    newNodes.resize(nodes.size());
+    for (int i = 0; i < options.numIterations; i++){
+        simulateStep(newNodes, nodes, params);
+    }
     return 0;
 }
