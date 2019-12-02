@@ -3,16 +3,17 @@
 #include "fileio.h"
 #include <vector>
 #include <math.h>
+#include <float.h>
 
-#define first_deriv(varname,prev,next,field,delta)\
+#define first_deriv(varname,prev,next,field,delta, default_value)\
                 if (prev && next){ \
                     varname = ((next)->field - (prev)->field) / (2.f*(delta)); \
                 } \
                 else if (prev){ \
-                    varname = -((prev)->field) / (2.f*(delta));\
+                    varname = (default_value -(prev)->field) / (2.f*(delta));\
                 } \
                 else if (next){ \
-                    varname = ((next)->field) / (2.f*(delta));\
+                    varname = ((next)->field - default_value) / (2.f*(delta));\
                 } \
                 else{ \
                     varname = 0.f; \
@@ -66,33 +67,33 @@ void simulateStep(std::vector<Node>& new_nodes,
 
 
                 float dudx, dvdy, dwdz;
-                first_deriv(dudx,nghbrs[nghbrsInd(-1,0,0)],nghbrs[nghbrsInd(1,0,0)],u,deltax);
-                first_deriv(dvdy,nghbrs[nghbrsInd(0,-1,0)],nghbrs[nghbrsInd(0,1,0)],v,deltay);
-                first_deriv(dwdz,nghbrs[nghbrsInd(0,0,-1)],nghbrs[nghbrsInd(0,0,1)],w,deltaz);
+                first_deriv(dudx,nghbrs[nghbrsInd(-1,0,0)],nghbrs[nghbrsInd(1,0,0)],u,deltax,0.f);
+                first_deriv(dvdy,nghbrs[nghbrsInd(0,-1,0)],nghbrs[nghbrsInd(0,1,0)],v,deltay,0.f);
+                first_deriv(dwdz,nghbrs[nghbrsInd(0,0,-1)],nghbrs[nghbrsInd(0,0,1)],w,deltaz,0.f);
 
                 float drhodx, drhody, drhodz, drhodt;
                 // update rho_air
-                first_deriv(drhodx,nghbrs[nghbrsInd(-1,0,0)],nghbrs[nghbrsInd(1,0,0)],rho_air,deltax);
-                first_deriv(drhody,nghbrs[nghbrsInd(0,-1,0)],nghbrs[nghbrsInd(0,1,0)],rho_air,deltay);
-                first_deriv(drhodz,nghbrs[nghbrsInd(0,0,-1)],nghbrs[nghbrsInd(0,0,1)],rho_air,deltaz);
+                first_deriv(drhodx,nghbrs[nghbrsInd(-1,0,0)],nghbrs[nghbrsInd(1,0,0)],rho_air,deltax,0.f);
+                first_deriv(drhody,nghbrs[nghbrsInd(0,-1,0)],nghbrs[nghbrsInd(0,1,0)],rho_air,deltay,0.f);
+                first_deriv(drhodz,nghbrs[nghbrsInd(0,0,-1)],nghbrs[nghbrsInd(0,0,1)],rho_air,deltaz,0.f);
                 drhodt = -(rho*(dudx+dvdy+dwdz)+drhodx*node.u+drhody*node.v+drhodz*node.w);
                 next_node.rho_air = node.rho_air + drhodt;
                 // update rho_fuel
-                first_deriv(drhodx,nghbrs[nghbrsInd(-1,0,0)],nghbrs[nghbrsInd(1,0,0)],rho_fuel,deltax);
-                first_deriv(drhody,nghbrs[nghbrsInd(0,-1,0)],nghbrs[nghbrsInd(0,1,0)],rho_fuel,deltay);
-                first_deriv(drhodz,nghbrs[nghbrsInd(0,0,-1)],nghbrs[nghbrsInd(0,0,1)],rho_fuel,deltaz);
+                first_deriv(drhodx,nghbrs[nghbrsInd(-1,0,0)],nghbrs[nghbrsInd(1,0,0)],rho_fuel,deltax,0.f);
+                first_deriv(drhody,nghbrs[nghbrsInd(0,-1,0)],nghbrs[nghbrsInd(0,1,0)],rho_fuel,deltay,0.f);
+                first_deriv(drhodz,nghbrs[nghbrsInd(0,0,-1)],nghbrs[nghbrsInd(0,0,1)],rho_fuel,deltaz,0.f);
                 drhodt = -(rho*(dudx+dvdy+dwdz)+drhodx*node.u+drhody*node.v+drhodz*node.w);
                 next_node.rho_fuel = node.rho_fuel + drhodt;
                 // update rho_co2
-                first_deriv(drhodx,nghbrs[nghbrsInd(-1,0,0)],nghbrs[nghbrsInd(1,0,0)],rho_co2,deltax);
-                first_deriv(drhody,nghbrs[nghbrsInd(0,-1,0)],nghbrs[nghbrsInd(0,1,0)],rho_co2,deltay);
-                first_deriv(drhodz,nghbrs[nghbrsInd(0,0,-1)],nghbrs[nghbrsInd(0,0,1)],rho_co2,deltaz);
+                first_deriv(drhodx,nghbrs[nghbrsInd(-1,0,0)],nghbrs[nghbrsInd(1,0,0)],rho_co2,deltax,0.f);
+                first_deriv(drhody,nghbrs[nghbrsInd(0,-1,0)],nghbrs[nghbrsInd(0,1,0)],rho_co2,deltay,0.f);
+                first_deriv(drhodz,nghbrs[nghbrsInd(0,0,-1)],nghbrs[nghbrsInd(0,0,1)],rho_co2,deltaz,0.f);
                 drhodt = -(rho*(dudx+dvdy+dwdz)+drhodx*node.u+drhody*node.v+drhodz*node.w);
                 next_node.rho_co2 = node.rho_co2 + drhodt;
                 // update rho_nox
-                first_deriv(drhodx,nghbrs[nghbrsInd(-1,0,0)],nghbrs[nghbrsInd(1,0,0)],rho_nox,deltax);
-                first_deriv(drhody,nghbrs[nghbrsInd(0,-1,0)],nghbrs[nghbrsInd(0,1,0)],rho_nox,deltay);
-                first_deriv(drhodz,nghbrs[nghbrsInd(0,0,-1)],nghbrs[nghbrsInd(0,0,1)],rho_nox,deltaz);
+                first_deriv(drhodx,nghbrs[nghbrsInd(-1,0,0)],nghbrs[nghbrsInd(1,0,0)],rho_nox,deltax,0.f);
+                first_deriv(drhody,nghbrs[nghbrsInd(0,-1,0)],nghbrs[nghbrsInd(0,1,0)],rho_nox,deltay,0.f);
+                first_deriv(drhodz,nghbrs[nghbrsInd(0,0,-1)],nghbrs[nghbrsInd(0,0,1)],rho_nox,deltaz,0.f);
                 drhodt = -(rho*(dudx+dvdy+dwdz)+drhodx*node.u+drhody*node.v+drhodz*node.w);
                 next_node.rho_nox = node.rho_nox + drhodt * deltat;
 
@@ -198,9 +199,9 @@ void simulateStep(std::vector<Node>& new_nodes,
                 float dTxzdz = (d2udz2 + d2wdxdz) * node.viscosity;
 
                 float dpdx, dpdy, dpdz;
-                first_deriv(dpdx,nghbrs[nghbrsInd(-1,0,0)],nghbrs[nghbrsInd(1,0,0)],pressure,deltax);
-                first_deriv(dpdy,nghbrs[nghbrsInd(0,-1,0)],nghbrs[nghbrsInd(0,1,0)],pressure,deltay);
-                first_deriv(dpdz,nghbrs[nghbrsInd(0,0,-1)],nghbrs[nghbrsInd(0,0,1)],pressure,deltaz);
+                first_deriv(dpdx,nghbrs[nghbrsInd(-1,0,0)],nghbrs[nghbrsInd(1,0,0)],pressure,deltax,node.pressure);
+                first_deriv(dpdy,nghbrs[nghbrsInd(0,-1,0)],nghbrs[nghbrsInd(0,1,0)],pressure,deltay,node.pressure);
+                first_deriv(dpdz,nghbrs[nghbrsInd(0,0,-1)],nghbrs[nghbrsInd(0,0,1)],pressure,deltaz,node.pressure);
 
                 float dudt = (-dpdx + dTxxdx + dTxydy + dTxzdz) / rho;
                 float dvdt = (-dpdy + dTxydx + dTyydy + dTyzdz) / rho;
@@ -210,9 +211,68 @@ void simulateStep(std::vector<Node>& new_nodes,
                 next_node.v = node.v + dvdt * deltat;
                 next_node.w = node.w + dwdt * deltat;
 
+                float dV = deltax*deltay*deltaz;
+                float E = internal_energy * dV;
+                float dEdx, dEdy, dEdz;
+                first_deriv(dEdx,nghbrs[nghbrsInd(-1,0,0)],nghbrs[nghbrsInd(1,0,0)],internal_energy,deltax,boundary_specific_heat*boundary_idling_temp);
+                first_deriv(dEdy,nghbrs[nghbrsInd(0,-1,0)],nghbrs[nghbrsInd(0,1,0)],internal_energy,deltay,boundary_specific_heat*boundary_idling_temp);
+                first_deriv(dEdz,nghbrs[nghbrsInd(0,0,-1)],nghbrs[nghbrsInd(0,0,1)],internal_energy,deltaz,boundary_specific_heat*boundary_idling_temp);
+                dEdx *= dV;
+                dEdy *= dV;
+                dEdz *= dV;
 
+                float Txx = (2.f*dudx - dvdy - dwdz) * 2.f/3.f *node.viscosity;
+                float Tyy = (2.f*dvdy - dudx - dwdz) * 2.f/3.f *node.viscosity;
+                float Tzz = (2.f*dwdz - dudx - dvdy) * 2.f/3.f *node.viscosity;
+                float Txy = (dudy + dvdx) * node.viscosity;
+                float Txz = (dudz + dwdx) * node.viscosity;
+                float Tyz = (dvdz + dwdy) * node.viscosity;
 
+                float dqxdx;
+                float dkdx, dTdx, d2Tdx2;
+                first_deriv(dkdx,nghbrs[nghbrsInd(-1,0,0)],nghbrs[nghbrsInd(1,0,0)],conductivity,deltax,boundary_conductivity);
+                first_deriv(dTdx,nghbrs[nghbrsInd(-1,0,0)],nghbrs[nghbrsInd(1,0,0)],temperature,deltax,boundary_idling_temp);
+                r0 = nghbrs[nghbrsInd(-1,0,0)];
+                r1 = nghbrs[nghbrsInd(0,0,0)];
+                r2 = nghbrs[nghbrsInd(1,0,0)];
+                d2Tdx2 = (r0 ? r0->temperature : boundary_idling_temp) - 2.f * (r1 ? r1->u : boundary_idling_temp) + (r2 ? r2->u : boundary_idling_temp);
+                d2Tdx2 /= (deltax * deltax);
 
+                float dqydy;
+                float dkdy, dTdy, d2Tdy2;
+                first_deriv(dkdy,nghbrs[nghbrsInd(0,-1,0)],nghbrs[nghbrsInd(0,1,0)],conductivity,deltay,boundary_conductivity);
+                first_deriv(dTdy,nghbrs[nghbrsInd(0,-1,0)],nghbrs[nghbrsInd(0,1,0)],temperature,deltay,boundary_idling_temp);
+                r0 = nghbrs[nghbrsInd(0,-1,0)];
+                r1 = nghbrs[nghbrsInd(0,0,0)];
+                r2 = nghbrs[nghbrsInd(0,1,0)];
+                d2dTdy2 = (r0 ? r0->temperature : boundary_idling_temp) - 2.f * (r1 ? r1->u : boundary_idling_temp) + (r2 ? r2->u : boundary_idling_temp);
+                d2Tdy2 /= (deltay * deltay);
+
+                float dqzdz;
+                float dkdz, dTdz, d2Tdz2;
+                first_deriv(dkdz,nghbrs[nghbrsInd(0,0,-1)],nghbrs[nghbrsInd(0,0,1)],conductivity,deltax,boundary_conductivity);
+                first_deriv(dTdz,nghbrs[nghbrsInd(0,0,-1)],nghbrs[nghbrsInd(0,0,1)],temperature,deltax,boundary_idling_temp);
+                r0 = nghbrs[nghbrsInd(0,0,-1)];
+                r1 = nghbrs[nghbrsInd(0,0,0)];
+                r2 = nghbrs[nghbrsInd(0,0,1)];
+                d2dTdz2 = (r0 ? r0->temperature : boundary_idling_temp) - 2.f * (r1 ? r1->u : boundary_idling_temp) + (r2 ? r2->u : boundary_idling_temp);
+                d2udz2 /= (deltaz * deltaz);
+
+                float dEdt = dQdt;
+                dEdt += rho*gravity*node.w;
+                dEdt -= dEdx*node.u + dEdy*node.v + dEdz*node.w + 
+                        node.internal_energy*dV*(dudx + dvdy + dwdz);
+                dEdt -= dpdx*node.u + dpdy*node.v + dpdz*node.w +
+                        node.pressure * (node.u+node.v+node.w);
+                dEdt += dudx*Txx + dudy*Txy + dudz * Txz + 
+                        node.u * (dTxxdx + dTxydy + dTxzdz);
+                dEdt += dvdx*Txy + dvdy*Tyy + dvdz*Tyz +
+                        node.v * (dTxydx + dTyydy + dTyzdz);
+                dEdt += dwdx*Txz + dwdy*Tyz + dwdz*Tzz +
+                        node.w * (dTxzdx + dTyzdy + dTzzdz);
+                dEdt -= dqxdx + dqydy + dqzdz;
+
+                next_node.internal_energy = node.internal_energy + dEdt / dV;
 
                 new_nodes[i] = next_node;
             }

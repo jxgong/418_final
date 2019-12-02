@@ -2,12 +2,12 @@
 #include <vector>
 
 class Node
-{
+{ 
     public:
         // physical properties
         float rho_air, rho_fuel, rho_co2, rho_nox;
         float pressure, temperature;
-        float viscosity, enthalpy; 
+        float viscosity, internal_energy; 
         // dynamic properties
         float u, v, w; 
         float get_rho();
