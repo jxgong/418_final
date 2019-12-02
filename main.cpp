@@ -3,8 +3,6 @@
 #include <vector>
 #include <math.h>
 
-#define g 9.81
-
 #define first_deriv(varname,prev,next,field,delta)\
                 if (prev && next){ \
                     varname = ((next)->field - (prev)->field) / (2.f*(delta)); \
@@ -24,7 +22,7 @@
 
 float temperature(Node &node){
     return (node.rho_air+node.rho_fuel+node.rho_co2+node.rho_nox)
-            * 287.05f * node.pressure;
+            * universal_gas_constant * node.pressure;
 }
 
 float viscosity(float temp){
@@ -63,6 +61,8 @@ void simulateStep(std::vector<Node>& new_nodes,
                 Node next_node;
 
                 float rho = node.rho_air+node.rho_fuel+node.rho_co2+node.rho_nox;
+                float dQdt = 0.f;
+
 
                 float dudx, dvdy, dwdz;
                 first_deriv(dudx,nghbrs[nghbrsInd(-1,0,0)],nghbrs[nghbrsInd(1,0,0)],u,deltax);
@@ -203,11 +203,14 @@ void simulateStep(std::vector<Node>& new_nodes,
 
                 float dudt = (-dpdx + dTxxdx + dTxydy + dTxzdz) / rho;
                 float dvdt = (-dpdy + dTxydx + dTyydy + dTyzdz) / rho;
-                float dwdt = (rho*g - dpdz + dTxzdx + dTyzdy + dTzzdz) / rho;
+                float dwdt = (rho*gravity - dpdz + dTxzdx + dTyzdy + dTzzdz) / rho;
 
                 next_node.u = node.u + dudt * deltat;
                 next_node.v = node.v + dvdt * deltat;
                 next_node.w = node.w + dwdt * deltat;
+
+
+
 
 
                 new_nodes[i] = next_node;

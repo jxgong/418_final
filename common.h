@@ -4,8 +4,12 @@
 class Node
 {
     public:
-        float rho_air, rho_fuel, rho_co2, rho_nox, pressure, temperature, viscosity; // physical properties
-        float u, v, w; // dynamic properties
+        // physical properties
+        float rho_air, rho_fuel, rho_co2, rho_nox;
+        float pressure, temperature;
+        float viscosity, enthalpy; 
+        // dynamic properties
+        float u, v, w; 
         float get_rho();
 
 };
