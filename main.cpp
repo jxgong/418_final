@@ -5,6 +5,8 @@
 #include <math.h>
 #include <float.h>
 
+#include "CycleTimer.h"
+
 #define gravity 9.81f
 #define universal_gas_constant 287.05f
 #define boundary_idling_temp 375.f
@@ -299,7 +301,9 @@ int main(int argc, char *argv[]){
     stepParams params;
     newNodes.resize(nodes.size());
     for (int i = 0; i < options.numIterations; i++){
+        double startTime = CycleTimer::currentSeconds();
         simulateStep(newNodes, nodes, params);
+        double endTime = CycleTimer::currentSeconds();
         nodes = newNodes;
     }
     saveToFile(newNodes, "output.txt");
