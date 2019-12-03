@@ -8,6 +8,7 @@ class Node
         float rho_air, rho_fuel, rho_co2, rho_nox;
         float pressure, temperature;
         float viscosity, internal_energy; 
+        float conductivity;
         // dynamic properties
         float u, v, w; 
         float get_rho();

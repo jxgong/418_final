@@ -5,6 +5,10 @@
 #include <math.h>
 #include <float.h>
 
+#define gravity 9.81f
+#define universal_gas_constant 287.05f
+#define boundary_idling_temp 375.f
+
 #define first_deriv(varname,prev,next,field,delta, default_value)\
                 if (prev && next){ \
                     varname = ((next)->field - (prev)->field) / (2.f*(delta)); \
@@ -210,8 +214,10 @@ void simulateStep(std::vector<Node>& new_nodes,
                 next_node.u = node.u + dudt * deltat;
                 next_node.v = node.v + dvdt * deltat;
                 next_node.w = node.w + dwdt * deltat;
+                float boundary_specific_heat; //TODO: define
 
                 float dV = deltax*deltay*deltaz;
+                float internal_energy; //TODO: define
                 float E = internal_energy * dV;
                 float dEdx, dEdy, dEdz;
                 first_deriv(dEdx,nghbrs[nghbrsInd(-1,0,0)],nghbrs[nghbrsInd(1,0,0)],internal_energy,deltax,boundary_specific_heat*boundary_idling_temp);
@@ -220,6 +226,8 @@ void simulateStep(std::vector<Node>& new_nodes,
                 dEdx *= dV;
                 dEdy *= dV;
                 dEdz *= dV;
+
+                float dudy, dvdx, dudz, dwdx, dvdz, dwdy; //TODO: define
 
                 float Txx = (2.f*dudx - dvdy - dwdz) * 2.f/3.f *node.viscosity;
                 float Tyy = (2.f*dvdy - dudx - dwdz) * 2.f/3.f *node.viscosity;
@@ -230,6 +238,8 @@ void simulateStep(std::vector<Node>& new_nodes,
 
                 float dqxdx;
                 float dkdx, dTdx, d2Tdx2;
+                float boundary_conductivity;
+                //TODO: define node conductivity
                 first_deriv(dkdx,nghbrs[nghbrsInd(-1,0,0)],nghbrs[nghbrsInd(1,0,0)],conductivity,deltax,boundary_conductivity);
                 first_deriv(dTdx,nghbrs[nghbrsInd(-1,0,0)],nghbrs[nghbrsInd(1,0,0)],temperature,deltax,boundary_idling_temp);
                 r0 = nghbrs[nghbrsInd(-1,0,0)];
@@ -245,7 +255,7 @@ void simulateStep(std::vector<Node>& new_nodes,
                 r0 = nghbrs[nghbrsInd(0,-1,0)];
                 r1 = nghbrs[nghbrsInd(0,0,0)];
                 r2 = nghbrs[nghbrsInd(0,1,0)];
-                d2dTdy2 = (r0 ? r0->temperature : boundary_idling_temp) - 2.f * (r1 ? r1->u : boundary_idling_temp) + (r2 ? r2->u : boundary_idling_temp);
+                d2Tdy2 = (r0 ? r0->temperature : boundary_idling_temp) - 2.f * (r1 ? r1->u : boundary_idling_temp) + (r2 ? r2->u : boundary_idling_temp);
                 d2Tdy2 /= (deltay * deltay);
 
                 float dqzdz;
@@ -255,7 +265,7 @@ void simulateStep(std::vector<Node>& new_nodes,
                 r0 = nghbrs[nghbrsInd(0,0,-1)];
                 r1 = nghbrs[nghbrsInd(0,0,0)];
                 r2 = nghbrs[nghbrsInd(0,0,1)];
-                d2dTdz2 = (r0 ? r0->temperature : boundary_idling_temp) - 2.f * (r1 ? r1->u : boundary_idling_temp) + (r2 ? r2->u : boundary_idling_temp);
+                d2Tdz2 = (r0 ? r0->temperature : boundary_idling_temp) - 2.f * (r1 ? r1->u : boundary_idling_temp) + (r2 ? r2->u : boundary_idling_temp);
                 d2udz2 /= (deltaz * deltaz);
 
                 float dEdt = dQdt;
