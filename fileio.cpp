@@ -2,6 +2,8 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include <iostream>
+#include <iomanip>
 #include "common.h"
 
 std::vector<Node> loadFromFile(std::string filename){
@@ -42,5 +44,22 @@ std::vector<Node> loadFromFile(std::string filename){
 }
 
 bool saveToFile(std::vector<Node> data, std::string filename){
+    std::ofstream file(filename);
+    if (!file)
+    {
+        std::cout << "error writing file \"" << filename << "\"" << std::endl;
+        return false;
+    }
+    file << std::setprecision(9);
+    Node curr_node;
+    for (unsigned int i = 0; i < data.size(); i++){
+        curr_node = data.at(i);
+        file << curr_node.rho_air << " " << curr_node.rho_fuel << " " 
+            << curr_node.rho_co2 << " " << curr_node.rho_nox << " " 
+            << curr_node.pressure << " " << curr_node.temperature << " " 
+            << curr_node.viscosity << " " << curr_node.u << " " << curr_node.w
+            << " " << curr_node.v << std::endl;
+    }
+    file.close();
     return true;
 }

@@ -300,6 +300,8 @@ int main(int argc, char *argv[]){
     newNodes.resize(nodes.size());
     for (int i = 0; i < options.numIterations; i++){
         simulateStep(newNodes, nodes, params);
+        nodes = newNodes;
     }
+    saveToFile(newNodes, "output.txt");
     return 0;
 }

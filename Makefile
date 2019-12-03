@@ -7,7 +7,7 @@ OBJDIR=objs
 LIBS       :=
 FRAMEWORKS :=
 
-# LDFLAGS=-L/usr/local/depot/cuda-8.0/lib64/ -lcudart
+LDFLAGS=-L/usr/local/depot/cuda-8.0/lib64/ -lcudart
 # LIBS += GL glut cudart
 OBJS = $(OBJDIR)/common.o $(OBJDIR)/fileio.o  $(OBJDIR)/main.o 
 
@@ -16,10 +16,13 @@ LDFRAMEWORKS := $(addprefix -framework , $(FRAMEWORKS))
 all: output
 
 dirs:
-	mkdir -p $(OBJDIR)
+	mkdir -p $(OBJDIR)/
 
 output: dirs $(OBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS) $(LDFRAMEWORKS)
 
 $(OBJDIR)/%.o: %.cpp
 	$(CXX) $< $(CXXFLAGS) -c -o $@
+
+$(OBJDIR)/%.o: %.cu
+	$(NVCC) $< $(NVCCFLAGS) -c -o $@
