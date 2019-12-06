@@ -19,7 +19,9 @@ std::vector<Node> loadFromFile(std::string filename){
         std::stringstream sstream(line);
         std::string str;
         std::getline(sstream, str, ' ');
-        node.rho_air = (float)atof(str.c_str());
+        node.rho_o2 = (float)atof(str.c_str());
+        std::getline(sstream, str, ' ');
+        node.rho_n2 = (float)atof(str.c_str());
         std::getline(sstream, str, ' ');
         node.rho_fuel = (float)atof(str.c_str());
         std::getline(sstream, str, ' ');
@@ -54,8 +56,9 @@ bool saveToFile(std::vector<Node> data, std::string filename){
     Node curr_node;
     for (unsigned int i = 0; i < data.size(); i++){
         curr_node = data.at(i);
-        file << curr_node.rho_air << " " << curr_node.rho_fuel << " " 
-            << curr_node.rho_co2 << " " << curr_node.rho_nox << " " 
+        file << curr_node.rho_o2 << " " << curr_node.rho_n2 << " "
+            << curr_node.rho_fuel << " " << curr_node.rho_co2 << " " 
+            << curr_node.rho_nox << " " << curr_node.rho_h2o << " " 
             << curr_node.pressure << " " << curr_node.temperature << " " 
             << curr_node.viscosity << " " << curr_node.u << " " << curr_node.w
             << " " << curr_node.v << std::endl;

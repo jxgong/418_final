@@ -1,3 +1,6 @@
+
+#ifndef COMMON_H
+
 #include <string>
 #include <vector>
 
@@ -5,12 +8,14 @@ class Node
 { 
     public:
         // physical properties
-        float rho_air, rho_fuel, rho_co2, rho_nox;
+        float rho_o2, rho_n2, rho_fuel, rho_co2, rho_nox, rho_h2o;
         float pressure, temperature;
         float viscosity, internal_energy; 
         float conductivity;
         // dynamic properties
         float u, v, w; 
+        // thermal properties
+        float dQdt;
         float get_rho();
 
 };
@@ -33,3 +38,5 @@ class stepParams{
 };
 
 StartupOptions parseOptions(int argc, char *argv[]);
+
+#endif
