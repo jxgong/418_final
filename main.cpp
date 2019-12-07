@@ -1,15 +1,16 @@
-#include "common.h"
+// #include "common.h"
 #include "physics.h"
 #include "fileio.h"
 #include <vector>
 #include <math.h>
 #include <float.h>
 
-// #include "CycleTimer.h"
+#include "CycleTimer.h"
 
-#define gravity 9.81f
-#define universal_gas_constant 287.05f
-#define boundary_idling_temp 375.f
+// #define gravity 9.81f
+// #define universal_gas_constant 287.05f
+// #define boundary_idling_temp 375.f
+#define PHYSICS_H 1
 
 #define first_deriv(varname,prev,curr,next,field,delta, default_value)\
                 if (prev && next){ \
@@ -28,9 +29,17 @@
 #define dim2Index(x,y,z,Lx,Ly) ((x) + ((y)*(Lx)) + ((z)*(Lx)*(Ly)))
 #define nghbrsInd(x,y,z) ((x) + 3 * (y) + 9 * (z))
 
+void simulateStepCuda(std::vector<Node>& new_nodes,
+                      std::vector<Node>& nodes,
+                      const stepParams params);
+StartupOptions parseOptions(int argc, char** argv);
+std::vector<Node> loadFromFile(std::string filename);
+bool saveToFile(std::vector<Node>, std::string filename);
+
+
 float calculate_pressure(Node *node){
     float nV = 0.f;
-    nV += = node->rho_o2 / o2_molar_mass;
+    nV += node->rho_o2 / o2_molar_mass;
     nV += node->rho_n2 / n2_molar_mass;
     nV += node->rho_fuel / fuel_molar_mass;
     nV += node->rho_co2 / co2_molar_mass;
@@ -78,19 +87,20 @@ void simulateStep(std::vector<Node>& new_nodes,
             for (int i = 0; i < length; i++){
                 int index = i + length * (j + width * (k));
                 if (!((nodes[index].temperature >= fuel_autoignition_point) || 
-                      (nodes[index].temperature >= fuel_flash_point && 
-                       params.sparks.find(index) != params.sparks.end()))){
+                      (nodes[index].temperature >= fuel_flash_point &&
+                       params.sparks.find(index) != params.sparks.end()))){ //TODO: Fix this.
                     continue;
                 }
                 float rho_o2 = nodes[index].rho_o2;
                 float nV_o2 = rho_o2 / o2_molar_mass;
                 float rho_fuel = nodes[index].rho_fuel;
                 float nV_fuel = rho_fuel / fuel_molar_mass;
+                //TODO: Define nV_air
 
-                float delta_o2, delta_n22, delta_fuel, delta_co2, delta_nox, delta_h2o;
+                float delta_o2, delta_n2, delta_fuel, delta_co2, delta_nox, delta_h2o, delta_air;
                 if (2.f*nV_o2 >= 25.f*nV_fuel){
                     // reaction is limited by fuel
-                    float reaction_rate = ;
+                    float reaction_rate = ; //TODO: define this
                     delta_fuel = -reaction_rate_coefficient * nV_fuel * deltat;
                     delta_o2 = -reaction_rate_coefficient * nV_air * deltat;
                     delta_nox = -(2.f*delta_air - 25.f*delta_nox);
@@ -105,12 +115,12 @@ void simulateStep(std::vector<Node>& new_nodes,
                 delta_h2o = -delta_fuel * 9.f;
                 delta_n2 = -delta_nox / 2.f;
 
-                nodes[index].o2 += delta_o2 * o2_molar_mass;
-                nodes[index].n2 += delta_n2 * n2_molar_mass;
-                nodes[index].fuel += delta_fuel * fuel_molar_mass;
-                nodes[index].co2 += delta_co2 * co2_molar_mass;
-                nodes[index].nox += delta_nox * nox_molar_mass;
-                nodes[index].h2o += delta_h2o * h2o_molar_mass;
+                nodes[index].rho_o2 += delta_o2 * o2_molar_mass;
+                nodes[index].rho_n2 += delta_n2 * n2_molar_mass;
+                nodes[index].rho_fuel += delta_fuel * fuel_molar_mass;
+                nodes[index].rho_co2 += delta_co2 * co2_molar_mass;
+                nodes[index].rho_nox += delta_nox * nox_molar_mass;
+                nodes[index].rho_h2o += delta_h2o * h2o_molar_mass;
 
                 nodes[index].dQdt = -delta_o2 * o2_formation_enthalpy
                                     -delta_n2 * n2_formation_enthalpy
