@@ -157,6 +157,7 @@ void simulateStep(std::vector<Node>& new_nodes,
                 float rho = node.rho_o2+node.rho_n2+node.rho_fuel+node.rho_co2+node.rho_nox+node.rho_h2o;
 
                 float dudx, dvdy, dwdz;
+                // TODO: segfaulting here
                 first_deriv(dudx,nghbrs[nghbrsInd(-1,0,0)],node,nghbrs[nghbrsInd(1,0,0)],u,deltax,0.f);
                 first_deriv(dvdy,nghbrs[nghbrsInd(0,-1,0)],node,nghbrs[nghbrsInd(0,1,0)],v,deltay,0.f);
                 first_deriv(dwdz,nghbrs[nghbrsInd(0,0,-1)],node,nghbrs[nghbrsInd(0,0,1)],w,deltaz,0.f);
@@ -394,6 +395,13 @@ int main(int argc, char *argv[]){
     std::vector<Node> newNodes;
     std::vector<Node> nodes = loadFromFile(options.inputFile);
     stepParams params;
+    params.length = options.length;
+    params.width = options.width;
+    params.depth = options.height;
+    params.deltat = 0.1;
+    params.deltax = 1;
+    params.deltay = 1;
+    params.deltaz = 1;
     newNodes.resize(nodes.size());
     for (int i = 0; i < options.numIterations; i++){
         double startTime = CycleTimer::currentSeconds();

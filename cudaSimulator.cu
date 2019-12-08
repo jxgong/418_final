@@ -18,7 +18,8 @@ __global__ void kernelSimSteps(){
 void simulateStepCuda(std::vector<Node>& new_nodes,
                       std::vector<Node>& nodes,
                       const stepParams params){
-    /* uh i don't think nodes are going to fit into the warps here. Like I'm
+    /*
+     * uh i don't think nodes are going to fit into the warps here. Like I'm
      * pretty sure we'll have to move the properties to some array and do
      * with that instead of just passing the structs into the device memory.
      * It might just be easier to do just the visualizer on this. 

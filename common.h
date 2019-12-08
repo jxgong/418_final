@@ -23,10 +23,10 @@ class Node
 
 struct StartupOptions
 {
-    int numIterations = 1;
+    int numIterations;
     float length, width, height;
-    std::string inputFile = "input.txt";
-    bool checkCorrectness = true;
+    std::string inputFile;
+    bool checkCorrectness;
 };
 
 class stepParams{
