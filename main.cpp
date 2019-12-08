@@ -427,7 +427,7 @@ int main(int argc, char *argv[]){
     stepParams params;
     int numIterations = 0;
     std::vector<Node> newNodes;
-    std::vector<Node> nodes = loadFromFile(options.inputFile,&params,&numIterations);
+    std::vector<Node> nodes = loadFromFile(options.inputFile, &params,&numIterations);
     newNodes.resize(nodes.size());
     std::cout << params.width << " " << params.length << " " << params.depth << std::endl;
     for (int i = 0; i < numIterations; i++){
@@ -436,10 +436,7 @@ int main(int argc, char *argv[]){
         double endTime = CycleTimer::currentSeconds();
         nodes.swap(newNodes);
         printf("iteration %d took %f seconds", i, startTime-endTime);
-<<<<<<< HEAD
         nodes.swap(newNodes);
-=======
->>>>>>> 30acd841112b50fdc8d7ddfc3e261921b49f542b
     }
     saveToFile(newNodes, "output.txt");
     return 0;
