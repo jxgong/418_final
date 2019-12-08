@@ -7,20 +7,21 @@
 
 #include "CycleTimer.h"
 
+
 // #define gravity 9.81f
 // #define universal_gas_constant 287.05f
 // #define boundary_idling_temp 375.f
-#define PHYSICS_H 1
+// #define PHYSICS_H 1
 
 #define first_deriv(varname,prev,curr,next,field,delta, default_value)\
                 if (prev && next){ \
                     varname = ((next)->field - (prev)->field) / (2.f*(delta)); \
                 } \
                 else if (prev){ \
-                    varname = (2.f*default_value - (curr).field - (prev)->field) / (2.f*(delta));\
+                    varname = (2.f*(default_value) - (curr).field - (prev)->field) / (2.f*(delta));\
                 } \
                 else if (next){ \
-                    varname = ((next)->field + (curr).field - 2.f*default_value) / (2.f*(delta));\
+                    varname = ((next)->field + (curr).field - 2.f*(default_value)) / (2.f*(delta));\
                 } \
                 else{ \
                     varname = 0.f; \
@@ -99,13 +100,12 @@ void simulateStep(std::vector<Node>& new_nodes,
                 float nV_air;
                 //TODO: Define nV_air
 
-                float delta_o2, delta_n2, delta_fuel, delta_co2, delta_nox, delta_h2o, delta_air;
+                float delta_o2, delta_n2, delta_fuel, delta_co2, delta_nox, delta_h2o;
                 if (2.f*nV_o2 >= 25.f*nV_fuel){
                     // reaction is limited by fuel
-                    // float reaction_rate = ; //TODO: define this
                     delta_fuel = -reaction_rate_coefficient * nV_fuel * deltat;
                     delta_o2 = -reaction_rate_coefficient * nV_air * deltat;
-                    delta_nox = -(2.f*delta_air - 25.f*delta_nox);
+                    delta_nox = -(2.f*delta_o2 - 25.f*delta_nox);
                 }
                 else{
                     // reaction is limited by air
@@ -341,6 +341,7 @@ void simulateStep(std::vector<Node>& new_nodes,
                 r2 = nghbrs[nghbrsInd(1,0,0)];
                 d2Tdx2 = (r0 ? r0->temperature : boundary_idling_temp) - 2.f * (r1 ? r1->u : boundary_idling_temp) + (r2 ? r2->u : boundary_idling_temp);
                 d2Tdx2 /= (deltax * deltax);
+                dqxdx = dkdx * dTdx + node.conductivity * d2Tdx2;
 
                 float dqydy;
                 float dkdy, dTdy, d2Tdy2;
@@ -351,6 +352,7 @@ void simulateStep(std::vector<Node>& new_nodes,
                 r2 = nghbrs[nghbrsInd(0,1,0)];
                 d2Tdy2 = (r0 ? r0->temperature : boundary_idling_temp) - 2.f * (r1 ? r1->u : boundary_idling_temp) + (r2 ? r2->u : boundary_idling_temp);
                 d2Tdy2 /= (deltay * deltay);
+                dqydy = dkdy * dTdy + node.conductivity * d2Tdy2;
 
                 float dqzdz;
                 float dkdz, dTdz, d2Tdz2;
@@ -361,6 +363,7 @@ void simulateStep(std::vector<Node>& new_nodes,
                 r2 = nghbrs[nghbrsInd(0,0,1)];
                 d2Tdz2 = (r0 ? r0->temperature : boundary_idling_temp) - 2.f * (r1 ? r1->u : boundary_idling_temp) + (r2 ? r2->u : boundary_idling_temp);
                 d2udz2 /= (deltaz * deltaz);
+                dqzdz = dkdz * dTdz + node.conductivity * d2Tdz2;
 
                 float dEdt = node.dQdt;
                 dEdt += rho*gravity*node.w;

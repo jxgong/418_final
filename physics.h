@@ -1,5 +1,6 @@
 
 #ifndef PHYSICS_H
+#define PHYSICS_H
 
 #define gravity 9.81f
 #define universal_gas_constant 8.314f
@@ -21,4 +22,5 @@
 #define co2_formation_enthalpy (-393500.f)
 #define nox_formation_enthalpy (-90250.f)
 #define h2o_formation_enthalpy (-292740.f)
+
 #endif
