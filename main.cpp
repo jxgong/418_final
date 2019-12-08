@@ -4,6 +4,7 @@
 #include <vector>
 #include <math.h>
 #include <float.h>
+#include <iostream>
 
 #include "CycleTimer.h"
 
@@ -28,14 +29,14 @@
                 }
 
 #define dim2Index(x,y,z,Lx,Ly) ((x) + ((y)*(Lx)) + ((z)*(Lx)*(Ly)))
-#define nghbrsInd(x,y,z) ((x) + 3 * (y) + 9 * (z))
+#define nghbrsInd(x,y,z) ((x) + 3 * (y) + 9 * (z) + 13)
 
 void simulateStepCuda(std::vector<Node>& new_nodes,
                       std::vector<Node>& nodes,
                       const stepParams params);
-StartupOptions parseOptions(int argc, char** argv);
-std::vector<Node> loadFromFile(std::string filename);
-bool saveToFile(std::vector<Node>, std::string filename);
+// StartupOptions parseOptions(int argc, char** argv);
+// std::vector<Node> loadFromFile(std::string filename);
+// bool saveToFile(std::vector<Node>, std::string filename);
 
 
 float calculate_pressure(Node *node){
@@ -152,13 +153,26 @@ void simulateStep(std::vector<Node>& new_nodes,
                     }
                 }
                 Node next_node;
+                std::cout << node.rho_o2 << " " <<
+                             node.rho_n2 << " " <<
+                             node.rho_fuel << " " <<
+                             node.rho_co2 << " " <<
+                             node.rho_nox << " " << 
+                             node.rho_h2o << " " <<
+                             node.pressure << " " <<
+                             node.temperature << " " <<
+                             node.viscosity << " " <<
+                             node.internal_energy << " " <<
+                             node.u << " " <<
+                             node.v << " " <<
+                             node.w << std::endl;
 
                 float rho = node.rho_o2+node.rho_n2+node.rho_fuel+node.rho_co2+node.rho_nox+node.rho_h2o;
+                // std::cout << rho << " ";
 
                 float dudx, dvdx, dwdx;
                 float dudy, dvdy, dwdy;
                 float dudz, dvdz, dwdz;
-                // TODO: segfaulting here
                 first_deriv(dudx,nghbrs[nghbrsInd(-1,0,0)],node,nghbrs[nghbrsInd(1,0,0)],u,deltax,0.f);
                 first_deriv(dvdx,nghbrs[nghbrsInd(-1,0,0)],node,nghbrs[nghbrsInd(1,0,0)],v,deltax,0.f);
                 first_deriv(dwdx,nghbrs[nghbrsInd(-1,0,0)],node,nghbrs[nghbrsInd(1,0,0)],w,deltax,0.f);
@@ -176,36 +190,42 @@ void simulateStep(std::vector<Node>& new_nodes,
                 first_deriv(drhodz,nghbrs[nghbrsInd(0,0,-1)],node,nghbrs[nghbrsInd(0,0,1)],rho_o2,deltaz,0.f);
                 drhodt = -(rho*(dudx+dvdy+dwdz)+drhodx*node.u+drhody*node.v+drhodz*node.w);
                 next_node.rho_o2 = node.rho_o2 + drhodt;
+                // std::cout << drhodt << " ";
                 // update rho_n2
                 first_deriv(drhodx,nghbrs[nghbrsInd(-1,0,0)],node,nghbrs[nghbrsInd(1,0,0)],rho_n2,deltax,0.f);
                 first_deriv(drhody,nghbrs[nghbrsInd(0,-1,0)],node,nghbrs[nghbrsInd(0,1,0)],rho_n2,deltay,0.f);
                 first_deriv(drhodz,nghbrs[nghbrsInd(0,0,-1)],node,nghbrs[nghbrsInd(0,0,1)],rho_n2,deltaz,0.f);
                 drhodt = -(rho*(dudx+dvdy+dwdz)+drhodx*node.u+drhody*node.v+drhodz*node.w);
                 next_node.rho_n2 = node.rho_n2 + drhodt;
+                // std::cout << drhodt << " ";
                 // update rho_fuel
                 first_deriv(drhodx,nghbrs[nghbrsInd(-1,0,0)],node,nghbrs[nghbrsInd(1,0,0)],rho_fuel,deltax,0.f);
                 first_deriv(drhody,nghbrs[nghbrsInd(0,-1,0)],node,nghbrs[nghbrsInd(0,1,0)],rho_fuel,deltay,0.f);
                 first_deriv(drhodz,nghbrs[nghbrsInd(0,0,-1)],node,nghbrs[nghbrsInd(0,0,1)],rho_fuel,deltaz,0.f);
                 drhodt = -(rho*(dudx+dvdy+dwdz)+drhodx*node.u+drhody*node.v+drhodz*node.w);
                 next_node.rho_fuel = node.rho_fuel + drhodt;
+                // std::cout << drhodt << " ";
                 // update rho_co2
                 first_deriv(drhodx,nghbrs[nghbrsInd(-1,0,0)],node,nghbrs[nghbrsInd(1,0,0)],rho_co2,deltax,0.f);
                 first_deriv(drhody,nghbrs[nghbrsInd(0,-1,0)],node,nghbrs[nghbrsInd(0,1,0)],rho_co2,deltay,0.f);
                 first_deriv(drhodz,nghbrs[nghbrsInd(0,0,-1)],node,nghbrs[nghbrsInd(0,0,1)],rho_co2,deltaz,0.f);
                 drhodt = -(rho*(dudx+dvdy+dwdz)+drhodx*node.u+drhody*node.v+drhodz*node.w);
                 next_node.rho_co2 = node.rho_co2 + drhodt;
+                // std::cout << drhodt << " ";
                 // update rho_nox
                 first_deriv(drhodx,nghbrs[nghbrsInd(-1,0,0)],node,nghbrs[nghbrsInd(1,0,0)],rho_nox,deltax,0.f);
                 first_deriv(drhody,nghbrs[nghbrsInd(0,-1,0)],node,nghbrs[nghbrsInd(0,1,0)],rho_nox,deltay,0.f);
                 first_deriv(drhodz,nghbrs[nghbrsInd(0,0,-1)],node,nghbrs[nghbrsInd(0,0,1)],rho_nox,deltaz,0.f);
                 drhodt = -(rho*(dudx+dvdy+dwdz)+drhodx*node.u+drhody*node.v+drhodz*node.w);
                 next_node.rho_nox = node.rho_nox + drhodt * deltat;
+                // std::cout << drhodt << " ";
                 // update rho_h2o
                 first_deriv(drhodx,nghbrs[nghbrsInd(-1,0,0)],node,nghbrs[nghbrsInd(1,0,0)],rho_h2o,deltax,0.f);
                 first_deriv(drhody,nghbrs[nghbrsInd(0,-1,0)],node,nghbrs[nghbrsInd(0,1,0)],rho_h2o,deltay,0.f);
                 first_deriv(drhodz,nghbrs[nghbrsInd(0,0,-1)],node,nghbrs[nghbrsInd(0,0,1)],rho_h2o,deltaz,0.f);
                 drhodt = -(rho*(dudx+dvdy+dwdz)+drhodx*node.u+drhody*node.v+drhodz*node.w);
                 next_node.rho_h2o = node.rho_h2o + drhodt * deltat;
+                // std::cout << drhodt << std::endl;
 
                 Node *r0c0 = nghbrs[nghbrsInd(-1,-1,0)];
                 Node *r0c1 = nghbrs[nghbrsInd(-1,1,0)];
@@ -317,9 +337,12 @@ void simulateStep(std::vector<Node>& new_nodes,
                 float dvdt = (-dpdy + dTxydx + dTyydy + dTyzdz) / rho;
                 float dwdt = (rho*gravity - dpdz + dTxzdx + dTyzdy + dTzzdz) / rho;
 
+                // std::cout << "u " << node.u << " v " << node.v << " w " << node.w << " ";
+                // std::cout << "dudt " << dudt << " dvdt " << dvdt << " dwdt " << dwdt << " ";
                 next_node.u = node.u + dudt * deltat;
                 next_node.v = node.v + dvdt * deltat;
                 next_node.w = node.w + dwdt * deltat;
+                // std::cout << "u " << next_node.u << " v " << next_node.v << " w " << next_node.w << std::endl;
 
                 float dV = deltax*deltay*deltaz;
                 float dEdx, dEdy, dEdz;
@@ -392,31 +415,31 @@ void simulateStep(std::vector<Node>& new_nodes,
 
                 new_nodes[i] = next_node;
             }
+            
         }
     }
-
+    std::cout << std::endl;
     return;
 }
 
 int main(int argc, char *argv[]){
     StartupOptions options = parseOptions(argc, argv);
-    std::vector<Node> newNodes;
-    std::vector<Node> nodes = loadFromFile(options.inputFile);
     stepParams params;
-    params.length = options.length;
-    params.width = options.width;
-    params.depth = options.height;
-    params.deltat = 0.1;
-    params.deltax = 1;
-    params.deltay = 1;
-    params.deltaz = 1;
+    int numIterations = 0;
+    std::vector<Node> newNodes;
+    std::vector<Node> nodes = loadFromFile(options.inputFile,&params,&numIterations);
     newNodes.resize(nodes.size());
-    for (int i = 0; i < options.numIterations; i++){
+    std::cout << params.width << " " << params.length << " " << params.depth << std::endl;
+    for (int i = 0; i < numIterations; i++){
         double startTime = CycleTimer::currentSeconds();
         simulateStep(newNodes, nodes, params);
         double endTime = CycleTimer::currentSeconds();
-        printf("iteration %d took %f seconds", i, startTime-endTime);
         nodes.swap(newNodes);
+        printf("iteration %d took %f seconds", i, startTime-endTime);
+<<<<<<< HEAD
+        nodes.swap(newNodes);
+=======
+>>>>>>> 30acd841112b50fdc8d7ddfc3e261921b49f542b
     }
     saveToFile(newNodes, "output.txt");
     return 0;
