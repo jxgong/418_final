@@ -1,4 +1,4 @@
-// #include "common.h"
+#include "common.h"
 #include "physics.h"
 #include "fileio.h"
 #include <vector>
