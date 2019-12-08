@@ -415,6 +415,7 @@ int main(int argc, char *argv[]){
         double startTime = CycleTimer::currentSeconds();
         simulateStep(newNodes, nodes, params);
         double endTime = CycleTimer::currentSeconds();
+        printf("iteration %d took %f seconds", i, startTime-endTime);
         nodes = newNodes;
     }
     saveToFile(newNodes, "output.txt");
