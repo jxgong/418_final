@@ -3,6 +3,7 @@
 #include <vector>
 #include "image.h"
 #include "CycleTimer.h"
+#include "cudaSimulator.h"
 
 #include <cuda.h>
 #include <cuda_runtime.h>
