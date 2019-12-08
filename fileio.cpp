@@ -29,17 +29,17 @@ std::vector<Node> loadFromFile(std::string filename){
         std::getline(sstream, str, ' ');
         node.rho_nox = (float)atof(str.c_str());
         std::getline(sstream, str, ' ');
+        node.rho_h2o = (float)atof(str.c_str());
+        std::getline(sstream, str, ' ');
         node.pressure = (float)atof(str.c_str());
         std::getline(sstream, str, ' ');
         node.temperature = (float)atof(str.c_str());
         std::getline(sstream, str, ' ');
         node.viscosity = (float)atof(str.c_str());
         std::getline(sstream, str, ' ');
-        node.u = (float)atof(str.c_str());
+        node.internal_energy = (float)atof(str.c_str());
         std::getline(sstream, str, ' ');
-        node.v = (float)atof(str.c_str());
-        std::getline(sstream, str, ' ');
-        node.w = (float)atof(str.c_str());
+        node.conductivity = (float)atof(str.c_str());
         result.push_back(node);
     }
     return result;

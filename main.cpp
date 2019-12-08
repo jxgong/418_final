@@ -88,19 +88,21 @@ void simulateStep(std::vector<Node>& new_nodes,
                 int index = i + length * (j + width * (k));
                 if (!((nodes[index].temperature >= fuel_autoignition_point) || 
                       (nodes[index].temperature >= fuel_flash_point &&
-                       params.sparks.find(index) != params.sparks.end()))){ //TODO: Fix this.
+                       params.sparks.begin() + index != params.sparks.end()))){ 
+                           //TODO: check if ^this works
                     continue;
                 }
                 float rho_o2 = nodes[index].rho_o2;
                 float nV_o2 = rho_o2 / o2_molar_mass;
                 float rho_fuel = nodes[index].rho_fuel;
                 float nV_fuel = rho_fuel / fuel_molar_mass;
+                float nV_air;
                 //TODO: Define nV_air
 
                 float delta_o2, delta_n2, delta_fuel, delta_co2, delta_nox, delta_h2o, delta_air;
                 if (2.f*nV_o2 >= 25.f*nV_fuel){
                     // reaction is limited by fuel
-                    float reaction_rate = ; //TODO: define this
+                    // float reaction_rate = ; //TODO: define this
                     delta_fuel = -reaction_rate_coefficient * nV_fuel * deltat;
                     delta_o2 = -reaction_rate_coefficient * nV_air * deltat;
                     delta_nox = -(2.f*delta_air - 25.f*delta_nox);
