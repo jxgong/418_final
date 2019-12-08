@@ -6,13 +6,22 @@
 #include <iomanip>
 #include "common.h"
 
-std::vector<Node> loadFromFile(std::string filename){
+std::vector<Node> loadFromFile(std::string filename, stepParams *params, int *num_iterations){
     std::ifstream inFile;
     inFile.open(filename);
     std::string line;
     std::vector<Node> result;
     if (!inFile) return result;
 //    TODO: randomly generate node info if no file found
+    inFile >> params->deltax;
+    inFile >> params->deltay;
+    inFile >> params->deltaz;
+    inFile >> params->deltat;
+    inFile >> *num_iterations;
+    inFile >> params->length;
+    inFile >> params->width;
+    inFile >> params->depth;
+
     while (std::getline(inFile, line))
     {
         Node node;
