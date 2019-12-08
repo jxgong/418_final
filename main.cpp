@@ -88,6 +88,21 @@ void simulateStep(std::vector<Node>& new_nodes,
         for (int j = 0; j < width; j++){
             for (int i = 0; i < length; i++){
                 int index = i + length * (j + width * (k));
+                Node node = nodes[index];
+                std::cout << node.rho_o2 << " " <<
+                             node.rho_n2 << " " <<
+                             node.rho_fuel << " " <<
+                             node.rho_co2 << " " <<
+                             node.rho_nox << " " << 
+                             node.rho_h2o << " " <<
+                             node.pressure << " " <<
+                             node.temperature << " " <<
+                             node.viscosity << " " <<
+                             node.internal_energy << " " <<
+                             node.u << " " <<
+                             node.v << " " <<
+                             node.w << std::endl;
+
                 if (!((nodes[index].temperature >= fuel_autoignition_point) || 
                       (nodes[index].temperature >= fuel_flash_point &&
                        params.sparks.begin() + index != params.sparks.end()))){ 
@@ -153,19 +168,6 @@ void simulateStep(std::vector<Node>& new_nodes,
                     }
                 }
                 Node next_node;
-                std::cout << node.rho_o2 << " " <<
-                             node.rho_n2 << " " <<
-                             node.rho_fuel << " " <<
-                             node.rho_co2 << " " <<
-                             node.rho_nox << " " << 
-                             node.rho_h2o << " " <<
-                             node.pressure << " " <<
-                             node.temperature << " " <<
-                             node.viscosity << " " <<
-                             node.internal_energy << " " <<
-                             node.u << " " <<
-                             node.v << " " <<
-                             node.w << std::endl;
 
                 float rho = node.rho_o2+node.rho_n2+node.rho_fuel+node.rho_co2+node.rho_nox+node.rho_h2o;
                 // std::cout << rho << " ";
@@ -427,6 +429,8 @@ int main(int argc, char *argv[]){
     stepParams params;
     int numIterations = 0;
     std::vector<Node> newNodes;
+    std::vector<int> sparks;
+    params.sparks = sparks;
     std::vector<Node> nodes = loadFromFile(options.inputFile,&params,&numIterations);
     newNodes.resize(nodes.size());
     std::cout << params.width << " " << params.length << " " << params.depth << std::endl;
