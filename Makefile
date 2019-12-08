@@ -28,5 +28,6 @@ $(OBJDIR)/%.o: %.cu
 $(OBJDIR)/%.o: %.cpp physics.h
 	$(CXX) $< $(CXXFLAGS) -c -o $@
 
-# $(OBJDIR)/%.o: %.h
-# 	$(CXX) $< $(CXXFLAGS) -c -o $@
+clean:
+	rm -rf $(OBJDIR)
+	rm output

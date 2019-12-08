@@ -1,4 +1,4 @@
-// #include "common.h"
+#include "common.h"
 #include "physics.h"
 #include "fileio.h"
 #include <vector>
@@ -435,6 +435,7 @@ int main(int argc, char *argv[]){
         simulateStep(newNodes, nodes, params);
         double endTime = CycleTimer::currentSeconds();
         nodes.swap(newNodes);
+        printf("iteration %d took %f seconds", i, startTime-endTime);
     }
     saveToFile(newNodes, "output.txt");
     return 0;
