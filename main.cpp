@@ -97,15 +97,14 @@ void simulateStep(std::vector<Node>& new_nodes,
                 float nV_o2 = rho_o2 / o2_molar_mass;
                 float rho_fuel = nodes[index].rho_fuel;
                 float nV_fuel = rho_fuel / fuel_molar_mass;
-                float nV_air;
                 //TODO: Define nV_air
 
                 float delta_o2, delta_n2, delta_fuel, delta_co2, delta_nox, delta_h2o;
                 if (2.f*nV_o2 >= 25.f*nV_fuel){
                     // reaction is limited by fuel
                     delta_fuel = -reaction_rate_coefficient * nV_fuel * deltat;
-                    delta_o2 = -reaction_rate_coefficient * nV_air * deltat;
-                    delta_nox = -(2.f*delta_o2 - 25.f*delta_nox);
+                    delta_o2 = -reaction_rate_coefficient * nV_o2 * deltat;
+                    delta_nox = -(2.f*delta_o2 - 25.f*delta_fuel);
                 }
                 else{
                     // reaction is limited by air
@@ -156,10 +155,18 @@ void simulateStep(std::vector<Node>& new_nodes,
 
                 float rho = node.rho_o2+node.rho_n2+node.rho_fuel+node.rho_co2+node.rho_nox+node.rho_h2o;
 
-                float dudx, dvdy, dwdz;
+                float dudx, dvdx, dwdx;
+                float dudy, dvdy, dwdy;
+                float dudz, dvdz, dwdz;
                 // TODO: segfaulting here
                 first_deriv(dudx,nghbrs[nghbrsInd(-1,0,0)],node,nghbrs[nghbrsInd(1,0,0)],u,deltax,0.f);
+                first_deriv(dvdx,nghbrs[nghbrsInd(-1,0,0)],node,nghbrs[nghbrsInd(1,0,0)],v,deltax,0.f);
+                first_deriv(dwdx,nghbrs[nghbrsInd(-1,0,0)],node,nghbrs[nghbrsInd(1,0,0)],w,deltax,0.f);
+                first_deriv(dudy,nghbrs[nghbrsInd(0,-1,0)],node,nghbrs[nghbrsInd(0,1,0)],u,deltay,0.f);
                 first_deriv(dvdy,nghbrs[nghbrsInd(0,-1,0)],node,nghbrs[nghbrsInd(0,1,0)],v,deltay,0.f);
+                first_deriv(dwdy,nghbrs[nghbrsInd(0,-1,0)],node,nghbrs[nghbrsInd(0,1,0)],w,deltay,0.f);
+                first_deriv(dudz,nghbrs[nghbrsInd(0,0,-1)],node,nghbrs[nghbrsInd(0,0,1)],u,deltaz,0.f);
+                first_deriv(dvdz,nghbrs[nghbrsInd(0,0,-1)],node,nghbrs[nghbrsInd(0,0,1)],v,deltaz,0.f);
                 first_deriv(dwdz,nghbrs[nghbrsInd(0,0,-1)],node,nghbrs[nghbrsInd(0,0,1)],w,deltaz,0.f);
 
                 float drhodx, drhody, drhodz, drhodt;
@@ -322,8 +329,6 @@ void simulateStep(std::vector<Node>& new_nodes,
                 dEdx *= dV;
                 dEdy *= dV;
                 dEdz *= dV;
-
-                float dudy, dvdx, dudz, dwdx, dvdz, dwdy; //TODO: define
 
                 float Txx = (2.f*dudx - dvdy - dwdz) * 2.f/3.f *node.viscosity;
                 float Tyy = (2.f*dvdy - dudx - dwdz) * 2.f/3.f *node.viscosity;
