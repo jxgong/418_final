@@ -8,6 +8,7 @@ class CudaVisualizer {
     private:
         Image* image;
         std::vector<Node>& nodes;
+        const stepParams step_params;
 
         float* cuImage;
         float* cuPressure;
