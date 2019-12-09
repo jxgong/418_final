@@ -10,7 +10,7 @@ FRAMEWORKS :=
 LDFLAGS=-L/usr/local/depot/cuda-8.0/lib64/ -lcudart
 # LIBS += GL glut cudart
 OBJS = $(OBJDIR)/main.o  $(OBJDIR)/cudaSimulator.o $(OBJDIR)/common.o\
-	   $(OBJDIR)/fileio.o
+	   $(OBJDIR)/physics.o $(OBJDIR)/fileio.o
 
 LDLIBS  := $(addprefix -l, $(LIBS))
 LDFRAMEWORKS := $(addprefix -framework , $(FRAMEWORKS))

@@ -13,7 +13,7 @@ struct GlobalConstants{
     int imageWidth;
     int imageHeight;
     float* imageData;
-}
+};
 
 __global__ void kernelSimSteps(){
     return;
