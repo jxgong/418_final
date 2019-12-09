@@ -1,15 +1,18 @@
 import random
 import math
 
-filename = "input/uniform_10-10-100.txt";
-deltax = 0.01;
-deltay = 0.01;
-deltaz = 0.001;
-deltat = 0.05;
-numIterations = 600;
-length = 10;
-width = 10;
-depth = 100;
+filename = "input/uniform_1-1-10.txt";
+deltax = 0.1;
+deltay = 0.1;
+deltaz = 0.01;
+deltat = 0.000001;
+numIterations = 1000;
+length = 1;
+width = 1;
+depth = 10;
+sparklen = 100;
+sparkStart = 200;
+sparkEnd = 300;
 
 def rho_o2(x, y, z):
     return 0.2854;
@@ -35,17 +38,22 @@ def temperature(x, y, z):
 def u(x, y, z):
     lo = -.1 #if x < length/2 else -.2;
     hi = .1 #if x > length/2 else .2;
-    return random.uniform(lo,hi);
+    return 0.# if x == 0 or x == length - 1 else random.uniform(lo,hi);
 
 def v(x, y, z):
     lo = -.1 #if x < length/2 else -.2;
     hi = .1 #if x > length/2 else .2;
-    return random.uniform(lo,hi);
+    return 0.# if y == 0 or y == width - 1 else random.uniform(lo,hi);
 
 def w(x, y, z):
     # lo = -.15 + (-.85 - .15) * z / depth;
     # return random.uniform(lo,-0.1);
-    return random.uniform(-.1,.1);
+    return 0.# if z == 0 or z == depth - 1 else random.uniform(-.1,.1);
+def spark(i):
+    y = width // 2;
+    x = length//4 + i * (length//2) / sparklen;
+    z = -(4*depth/(3*sparklen**2)) * i**2 + (4 * depth/ (3 * sparklen)) * i;
+    return x + y*length + z * length*width;
 
 class Node(object):
     def __init__(self):
@@ -61,11 +69,11 @@ def calculate_pressure(node):
     nV += node.rho_h2o / 0.018015;
     return nV * 8.31 * node.temperature;
 def temperature_to_internal_energy(temperature):
-    return 268.
+    return 268000 + (temperature - 375) /0.723;
 def temperature_to_viscosity(temp):
     return 0.000001458 * math.sqrt(temp*temp*temp) / (temp + 110.4);
 def temperature_to_conductivity(temp):
-    return 35.;
+    return 1.3965 + (temp - 375.) * (-0.000056);
 
 def main():
     f = open(filename,"w+");
@@ -117,6 +125,11 @@ def main():
         if (percentage - prev >= 10.):
             print("%f %% complete" % percentage)
             prev = percentage;
+    f.write("%d\n" % sparklen);
+    f.write("%d\n" % sparkStart);
+    f.write("%d\n" % sparkEnd);
+    for i in range(sparklen):
+        f.write("%d\n" % spark(i));
     f.close();
     print("done\n");
     return 0;

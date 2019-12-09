@@ -10,6 +10,9 @@ float calculate_pressure(Node *node){
     nV += node->rho_co2 / co2_molar_mass;
     nV += node->rho_nox / nox_molar_mass;
     nV += node->rho_h2o / h2o_molar_mass;
+    if (nV <= 0.f){
+        return 0.f;
+    }
     return nV * 8.31 * node->temperature;
 }
 
@@ -18,17 +21,19 @@ float temperature_to_viscosity(float temp){
 }
 
 float temperature_to_conductivity(float temp){
-    return 35.f;
+    return 1.3965f + (temp - 375.f) * (-0.000056f);
 }
 
-float internal_energy_to_temperature(float temperature){
-    // TODO: enter empirical mapping of internal energy to temperature
-    return boundary_idling_temp;
+float internal_energy_to_temperature(Node *node){
+    float rho = node->rho_o2+node->rho_n2+node->rho_fuel+node->rho_co2+node->rho_nox+node->rho_h2o;
+    if (rho <= 0){
+        return 0.f;
+    }
+    return 375.f + (node->internal_energy - 268000.f)/(723.5f*rho);
 }
 
 float temperature_to_internal_energy(float temperature){
-    // TODO: enter empirical mapping of internal energy to temperature
-    return 268.f;
+    return 268000 + (temperature - 375.f) /0.7235f;
 }
 
 float o2_enthalpy(float temperature){

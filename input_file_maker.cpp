@@ -3,15 +3,15 @@
 #include "physics.h"
 #include <cstdlib>
 
-const char *filename = "input/uniform_100-100-100.txt";
-float deltax = 0.001f;
-float deltay = 0.001f;
-float deltaz = 0.001f;
+const char *filename = "input/pulled_1000-1000-1000.txt";
+float deltax = 0.0001f;
+float deltay = 0.0001f;
+float deltaz = 0.0001f;
 float deltat = 0.05f;
 int numIterations = 600;
-int length = 100;
-int width = 100;
-int depth = 100;
+int length = 1000;
+int width = 1000;
+int depth = 1000;
 
 static float rho_o2(int x, int y, int z){
     return 0.2854f;
