@@ -76,7 +76,6 @@ void simulateStep(std::vector<Node>& new_nodes,
                 float nV_o2 = rho_o2 / o2_molar_mass;
                 float rho_fuel = nodes[index].rho_fuel;
                 float nV_fuel = rho_fuel / fuel_molar_mass;
-                //TODO: Define nV_air
 
                 float delta_o2, delta_n2, delta_fuel, delta_co2, delta_nox, delta_h2o;
                 if (2.f*nV_o2 >= 25.f*nV_fuel){
