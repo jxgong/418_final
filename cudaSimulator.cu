@@ -5,7 +5,9 @@
 #include "CycleTimer.h"
 #include "cudaSimulator.h"
 #include "ppm.h"
+#include "fileio.h"
 
+#include "math.h"
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <driver_functions.h>
@@ -24,10 +26,11 @@ struct GlobalConstants{
     int imageHeight;
     float* imageData;
     
-    int nodeWidth, nodeLength, nodeDepth;
+    int nodeWidth, nodeLength, nodeDepth, sparkLen;
     float dx, dy, dz, dt;
     Node* nodes;
     Node* newNodes;
+    Node* sparks;
 };
 
 __constant__ GlobalConstants cuImageData;
@@ -40,17 +43,17 @@ __global__ void kernelSimStep(){
     int nodeX = blockIdx.x * blockDim.x + threadIdx.x;
     int nodeY = blockIdx.y * blockDim.y + threadIdx.y;
     int nodeZ = blockIdx.z * blockDim.z + threadIdx.z;
-    if (nodeX >= cuImageData.nodeLength || nodeY >= cuImageData.nodeWidth
-                    || nodeZ >= cuImageData.nodeDepth){
+    int length = cuImageData.nodeLength;
+    int width = cuImageData.nodeWidth;
+    int depth = cuImageData.nodeDepth;
+    if (nodeX >= length || nodeY >= width
+                    || nodeZ >= depth){
         return;
     }
     float deltax = cuImageData.dx;
     float deltay = cuImageData.dy;
     float deltaz = cuImageData.dz;
     float deltat = cuImageData.dt;
-    int length = cuImageData.nodeLength;
-    int width = cuImageData.nodeWidth;
-    int depth = cuImageData.nodeDepth;
     int index = getNodeIdx(nodeX, nodeY, nodeZ);
     const Node *node = &cuImageData.nodes[index];
     Node* nghbrs[27];
@@ -325,8 +328,8 @@ __global__ void kernelSimStep(){
     next_node->temperature = (new_rho <= 0 ? 0.f : 375 +
                               next_node->internal_energy-268000.f/(723.5f*rho));
     float temp = next_node->temperature;
-    // next_node->viscosity = 0.000001458f * sqrtf(temp*temp*temp) / (temp + 110.4f);
-    // next_node->conductivity = 0.000001458f * sqrtf(temp*temp*temp) / (temp + 110.4f);
+    next_node->viscosity = 0.000001458f * sqrt(temp*temp*temp) / (temp + 110.4f);
+    next_node->conductivity = 0.000001458f * sqrt(temp*temp*temp) / (temp + 110.4f);
     //TODO: find a way to get square root in CUDA
     float nV = 0.f;
     nV += next_node->rho_o2 / o2_molar_mass;
@@ -349,7 +352,7 @@ __global__ void kernelSpark(){
     int nodeIdx = getNodeIdx(nodeX, nodeY, nodeZ);
     if (!((cuImageData.nodes[nodeIdx].temperature >= fuel_autoignition_point) || 
             (cuImageData.nodes[nodeIdx].temperature >= fuel_flash_point &&
-            true))){
+            false))){
             // sparks.find(index) != sparks.end()))){ 
                 //TODO: check if ^this works
         return;
@@ -480,22 +483,23 @@ void CudaVisualizer::simulateSteps(){
         double startTime = CycleTimer::currentSeconds();
         kernelSpark<<<blockDim, gridDim>>>();
         kernelSimStep<<<blockDim, gridDim>>>();
+        double endTime = CycleTimer::currentSeconds();
         kernelCopyNodes<<<blockDim, gridDim>>>();
         cudaError_t errCode = cudaPeekAtLastError();
         if (errCode != cudaSuccess) {
             fprintf(stderr, "WARNING: A CUDA error occured on iteration %d: code=%d, %s\n", i, errCode, cudaGetErrorString(errCode));
         }
-        double endTime = CycleTimer::currentSeconds();
         printf("iteration %d took %f seconds on CUDA\n", i, endTime-startTime);
     }
-    cudaMemcpy(&nodes, cuNewNodes, nodeSize * sizeof(Node),
+    printf("%d\n", nodeSize);
+    cudaMemcpy(nodes, cuNewNodes, nodeSize * sizeof(Node),
                 cudaMemcpyDeviceToHost);
     return;
 }
 
 std::vector<Node>
 CudaVisualizer::getNodes(){
-    const std::vector<Node> res (nodes, nodes+nodeSize);
+    const std::vector<Node> res(nodes, nodes+nodeSize);
     return res;
 }
 
@@ -529,7 +533,9 @@ CudaVisualizer::shade(){
 CudaVisualizer::CudaVisualizer(){
     image = NULL;
     nodes = NULL;
+    sparks = NULL;
     
+    sparkLen = 0;
     nodeWidth = 0;
     nodeLength = 0;
     nodeDepth = 0;
@@ -560,10 +566,13 @@ CudaVisualizer::init(){
         cudaFree(cuImage);
         cudaFree(cuNodes);
         cudaFree(cuNewNodes);
+        cudaFree(cuSparks);
     }
+    if (!image) allocOutputImage();
     cudaMalloc(&cuImage, 4 * sizeof(float) * image->width * image->height);
     cudaMalloc(&cuNodes, sizeof(Node) * nodeSize);
     cudaMalloc(&cuNewNodes, sizeof(Node) * nodeSize);
+    cudaMalloc(&cuSparks, sizeof(int) * sparkLen);
 
     GlobalConstants params;
     params.imageWidth = image->width;
@@ -572,6 +581,7 @@ CudaVisualizer::init(){
     params.nodeWidth = nodeWidth;
     params.nodeLength = nodeLength;
     params.nodeDepth = nodeDepth;
+    params.sparkLen = sparkLen;
     params.nodes = cuNodes;
     params.newNodes = cuNewNodes;
     params.dx = dx;
@@ -595,8 +605,9 @@ CudaVisualizer::getImage(){
 
 void
 CudaVisualizer::setParams(std::vector<Node>& new_nodes,
+                          std::vector<int> spark_vec,
                           const stepParams params,
-                          int iterations){
+                          int iterations, int sparkSize){
     nodes = &new_nodes[0];
     nodeSize = new_nodes.size();
     nodeWidth = params.width;
@@ -606,6 +617,8 @@ CudaVisualizer::setParams(std::vector<Node>& new_nodes,
     dy = params.deltay;
     dz = params.deltaz;
     dt = params.deltat;
+    sparkLen = sparkSize;
+    sparks = &spark_vec[0];
     numIterations = iterations;
 }
 

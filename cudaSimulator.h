@@ -8,6 +8,8 @@ class CudaVisualizer {
     private:
         Image* image;
         Node* nodes;
+        int* sparks;
+        int sparkLen;
         int nodeWidth;
         int nodeLength;
         int nodeDepth;
@@ -18,6 +20,7 @@ class CudaVisualizer {
         float* cuImage;
         Node* cuNodes;
         Node* cuNewNodes;
+        int* cuSparks;
 
     public:
         CudaVisualizer();
@@ -27,8 +30,9 @@ class CudaVisualizer {
         void clearImage();
         void simulateSteps();
         void render();
-        void setParams(std::vector<Node>& nodes, const stepParams params,
-                        int iterations);
+        void setParams(std::vector<Node>& nodes, std::vector<int> spark_vec,
+                        const stepParams params,
+                        int iterations, int sparkSize);
         void shade();
         void init();
         std::vector<Node> getNodes();

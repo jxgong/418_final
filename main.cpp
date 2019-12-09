@@ -49,7 +49,7 @@ void simulateStep(std::vector<Node>& new_nodes,
                        sparks.find(index) != sparks.end()))){
                     continue;
                 }
-                std::cout << "Combusted!!!!!!!!!!!!!!!!" << std::endl;
+                // std::cout << "Combusted!!!!!!!!!!!!!!!!" << std::endl;
                 float rho_o2 = nodes[index].rho_o2;
                 float nV_o2 = rho_o2 / o2_molar_mass;
                 float rho_fuel = nodes[index].rho_fuel;
@@ -85,7 +85,7 @@ void simulateStep(std::vector<Node>& new_nodes,
                                     -delta_co2 * co2_formation_enthalpy
                                     -delta_nox * nox_formation_enthalpy
                                     -delta_h2o * h2o_formation_enthalpy;
-                std::cout << "Combustion Energy Released " << nodes[index].dQ << std::endl;
+                // std::cout << "Combustion Energy Released " << nodes[index].dQ << std::endl;
 
             }
         }
@@ -373,15 +373,10 @@ void simulateStep(std::vector<Node>& new_nodes,
                 // dEdt -= dqxdx + dqydy + dqzdz;
 
                 next_node->internal_energy = node->internal_energy + (dEdt / dV) * deltat;
-                if (true){
-                    std::cout << "old U " << node->internal_energy << " dUdt " << dEdt *dV << " new U " << next_node->internal_energy << " dQ " << node->dQ << std::endl;
-                }
                 next_node->temperature = internal_energy_to_temperature(next_node);
                 next_node->viscosity = temperature_to_viscosity(next_node->temperature);
                 next_node->conductivity = temperature_to_conductivity(next_node->temperature);
                 next_node->pressure = calculate_pressure(next_node);
-                std::cout << "old_temperature " << node->temperature << " new_temperature " << next_node->temperature << std::endl; 
-                std::cout << "old_pressure " << node->pressure << " new_pressure " << next_node->pressure << std::endl; 
             }
             
         }
@@ -393,23 +388,32 @@ void simulateStep(std::vector<Node>& new_nodes,
 int main(int argc, char *argv[]){
     // StartupOptions options = parseOptions(argc, argv);
     stepParams params;
+    std::string mode;
+    if (argc >= 2){
+        mode = argv[1];
+    }
+    else mode = "cuda";
     int numIterations = 0;
-    bool cudaFlag = true;
     std::vector<Node> newNodes;
     std::unordered_set<int> sparks;
     std::unordered_set<int> empty_set;
     int sparkStart, sparkEnd;
     std::vector<Node> nodes = loadFromFile(argv[1],&params,&numIterations,&sparks,&sparkStart,&sparkEnd);
     std::cout << "Sparks has size: " << sparks.size() << std::endl;
+    std::vector<int> spark_vec(sparks.begin(), sparks.end());
     newNodes.resize(nodes.size());
     CudaVisualizer* visualizer = new CudaVisualizer();
-    if (cudaFlag){
-        visualizer->setParams(nodes, params, numIterations);
+    if (true){
+        printf("using cuda\n");
+        visualizer->setParams(nodes, spark_vec, params, numIterations, spark_vec.size());
+        visualizer->init();
         visualizer->simulateSteps();
+        visualizer->getNodes();
         newNodes = visualizer->getNodes();
-        nodes.swap(newNodes);
     }
     else{
+        printf("using sequence\n");
+        visualizer->setParams(nodes, spark_vec, params, numIterations, spark_vec.size());
         for (int i = 0; i < numIterations; i++){
             double startTime = CycleTimer::currentSeconds();
             simulateStep(newNodes, nodes, params,sparkStart <= i && i < sparkEnd ? sparks : empty_set);
@@ -418,7 +422,7 @@ int main(int argc, char *argv[]){
             printf("iteration %d took %f seconds\n", i, endTime-startTime);
         }
     }
-    visualizer->setParams(newNodes, params, numIterations);
+    visualizer->setParams(newNodes, spark_vec, params, numIterations, spark_vec.size());
     double renderStart = CycleTimer::currentSeconds();
     visualizer->render();
     // delete visualizer;
