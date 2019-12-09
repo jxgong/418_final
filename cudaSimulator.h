@@ -2,6 +2,7 @@
 #define CUDA_SIMULATOR_H
 
 #include "image.h"
+#include "common.h"
 
 class CudaVisualizer {
     private:
@@ -9,9 +10,9 @@ class CudaVisualizer {
 
     public:
         const Image* getImage();
-        void allocOutputImage();
+        void allocOutputImage(int width, int height);
         void clearImage();
-        void render();
+        void render(std::vector<Node>& nodes, const stepParams params);
 };
 
 #endif

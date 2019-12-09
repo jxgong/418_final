@@ -9,6 +9,12 @@
 #include <cuda_runtime.h>
 #include <driver_functions.h>
 
+struct GlobalConstants{
+    int imageWidth;
+    int imageHeight;
+    float* imageData;
+}
+
 __global__ void kernelSimSteps(){
     return;
 }
@@ -27,7 +33,23 @@ void simulateStepCuda(std::vector<Node>& new_nodes,
      */
     return;
 }
+void
+CudaVisualizer::allocOutputImage(int length, int width){
+    if (image) delete image;
+    image = new Image(width, length);
+    return;
+}
 
-void visualizer(std::vector<Node> & nodes){
+void CudaVisualizer::clearImage(){
+    return;
+}
+
+void 
+CudaVisualizer::render(std::vector<Node>& nodes,
+                        const stepParams params){
+    if (!image){
+        allocOutputImage(params.length, params.width);
+    }
+    clearImage();
     return;
 }

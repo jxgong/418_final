@@ -70,7 +70,7 @@ bool saveToFile(std::vector<Node> data, std::string filename){
             << curr_node.rho_nox << " " << curr_node.rho_h2o << " " 
             << curr_node.pressure << " " << curr_node.temperature << " " 
             << curr_node.viscosity << " " << curr_node.internal_energy << " "
-            << curr_node.conductivity;
+            << curr_node.conductivity << std::endl;
     }
     file.close();
     return true;

@@ -22,7 +22,7 @@ dirs:
 output: dirs $(OBJS) 
 	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS) $(LDFRAMEWORKS)
 
-$(OBJDIR)/%.o: %.cu
+$(OBJDIR)/%.o: %.cu cudaSimulator.h
 	$(NVCC) $< $(NVCCFLAGS) -c -o $@
 
 $(OBJDIR)/%.o: %.cpp physics.h
