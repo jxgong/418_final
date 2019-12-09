@@ -2,6 +2,8 @@
 #ifndef PHYSICS_H
 #define PHYSICS_H
 
+#include "common.h"
+
 #define gravity 9.81f
 #define universal_gas_constant 8.314f
 #define fuel_flash_point 286.1f 
@@ -22,5 +24,12 @@
 #define co2_formation_enthalpy (-393500.f)
 #define nox_formation_enthalpy (-90250.f)
 #define h2o_formation_enthalpy (-292740.f)
+
+float calculate_pressure(Node *node);
+float temperature_to_viscosity(float temp);
+float temperature_to_conductivity(float temp);
+float internal_energy_to_temperature(float temperature);
+float o2_enthalpy(float temperature);
+float temperature_to_internal_energy(float temperature);
 
 #endif
