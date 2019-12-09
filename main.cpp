@@ -14,10 +14,10 @@
                     varname = ((next)->field - (prev)->field) / (2.f*(delta)); \
                 } \
                 else if (prev){ \
-                    varname = (2.f*(default_value) - (curr).field - (prev)->field) / (2.f*(delta));\
+                    varname = (2.f*(default_value) - (curr)->field - (prev)->field) / (2.f*(delta));\
                 } \
                 else if (next){ \
-                    varname = ((next)->field + (curr).field - 2.f*(default_value)) / (2.f*(delta));\
+                    varname = ((next)->field + (curr)->field - 2.f*(default_value)) / (2.f*(delta));\
                 } \
                 else{ \
                     varname = 0.f; \
@@ -52,19 +52,19 @@ void simulateStep(std::vector<Node>& new_nodes,
             for (int i = 0; i < length; i++){
                 int index = i + length * (j + width * (k));
                 Node node = nodes[index];
-                // std::cout << node.rho_o2 << " " <<
-                //              node.rho_n2 << " " <<
-                //              node.rho_fuel << " " <<
-                //              node.rho_co2 << " " <<
-                //              node.rho_nox << " " << 
-                //              node.rho_h2o << " " <<
-                //              node.pressure << " " <<
-                //              node.temperature << " " <<
-                //              node.viscosity << " " <<
-                //              node.internal_energy << " " <<
-                //              node.u << " " <<
-                //              node.v << " " <<
-                //              node.w << std::endl;
+                // std::cout << node->rho_o2 << " " <<
+                //              node->rho_n2 << " " <<
+                //              node->rho_fuel << " " <<
+                //              node->rho_co2 << " " <<
+                //              node->rho_nox << " " << 
+                //              node->rho_h2o << " " <<
+                //              node->pressure << " " <<
+                //              node->temperature << " " <<
+                //              node->viscosity << " " <<
+                //              node->internal_energy << " " <<
+                //              node->u << " " <<
+                //              node->v << " " <<
+                //              node->w << std::endl;
 
                 if (!((nodes[index].temperature >= fuel_autoignition_point) || 
                       (nodes[index].temperature >= fuel_flash_point &&
@@ -113,13 +113,12 @@ void simulateStep(std::vector<Node>& new_nodes,
         }
     }
 
-    // case of second or later step
     for (int k = 0; k < depth; k++){
         for (int j = 0; j < width; j++){
             for (int i = 0; i < length; i++){
                 int index = i + length * (j + width * (k));
                 std::vector<Node*> nghbrs(27,NULL);
-                const Node node = nodes[index];
+                const Node *node = &nodes[index];
                 for (int n = 0; n < 27; n++){
                     int x,y,z;
                     x = (n % 3) - 1;
@@ -130,9 +129,9 @@ void simulateStep(std::vector<Node>& new_nodes,
                         nghbrs[n] = &nodes[index+x+y*length+z*length*width];
                     }
                 }
-                Node *next_node = &new_nodes[i];
+                Node *next_node = &new_nodes[index];
 
-                float rho = node.rho_o2+node.rho_n2+node.rho_fuel+node.rho_co2+node.rho_nox+node.rho_h2o;
+                float rho = node->rho_o2+node->rho_n2+node->rho_fuel+node->rho_co2+node->rho_nox+node->rho_h2o;
                 // std::cout << rho << " ";
 
                 float dudx, dvdx, dwdx;
@@ -153,43 +152,43 @@ void simulateStep(std::vector<Node>& new_nodes,
                 first_deriv(drhodx,nghbrs[nghbrsInd(-1,0,0)],node,nghbrs[nghbrsInd(1,0,0)],rho_o2,deltax,0.f);
                 first_deriv(drhody,nghbrs[nghbrsInd(0,-1,0)],node,nghbrs[nghbrsInd(0,1,0)],rho_o2,deltay,0.f);
                 first_deriv(drhodz,nghbrs[nghbrsInd(0,0,-1)],node,nghbrs[nghbrsInd(0,0,1)],rho_o2,deltaz,0.f);
-                drhodt = -(node.rho_o2*(dudx+dvdy+dwdz)+drhodx*node.u+drhody*node.v+drhodz*node.w);
-                next_node->rho_o2 = node.rho_o2 + drhodt;
+                drhodt = -(node->rho_o2*(dudx+dvdy+dwdz)+drhodx*node->u+drhody*node->v+drhodz*node->w);
+                next_node->rho_o2 = node->rho_o2 + drhodt;
                 // std::cout << drhodt << " ";
                 // update rho_n2
                 first_deriv(drhodx,nghbrs[nghbrsInd(-1,0,0)],node,nghbrs[nghbrsInd(1,0,0)],rho_n2,deltax,0.f);
                 first_deriv(drhody,nghbrs[nghbrsInd(0,-1,0)],node,nghbrs[nghbrsInd(0,1,0)],rho_n2,deltay,0.f);
                 first_deriv(drhodz,nghbrs[nghbrsInd(0,0,-1)],node,nghbrs[nghbrsInd(0,0,1)],rho_n2,deltaz,0.f);
-                drhodt = -(node.rho_n2*(dudx+dvdy+dwdz)+drhodx*node.u+drhody*node.v+drhodz*node.w);
-                next_node->rho_n2 = node.rho_n2 + drhodt;
+                drhodt = -(node->rho_n2*(dudx+dvdy+dwdz)+drhodx*node->u+drhody*node->v+drhodz*node->w);
+                next_node->rho_n2 = node->rho_n2 + drhodt;
                 // std::cout << drhodt << " ";
                 // update rho_fuel
                 first_deriv(drhodx,nghbrs[nghbrsInd(-1,0,0)],node,nghbrs[nghbrsInd(1,0,0)],rho_fuel,deltax,0.f);
                 first_deriv(drhody,nghbrs[nghbrsInd(0,-1,0)],node,nghbrs[nghbrsInd(0,1,0)],rho_fuel,deltay,0.f);
                 first_deriv(drhodz,nghbrs[nghbrsInd(0,0,-1)],node,nghbrs[nghbrsInd(0,0,1)],rho_fuel,deltaz,0.f);
-                drhodt = -(node.rho_fuel*(dudx+dvdy+dwdz)+drhodx*node.u+drhody*node.v+drhodz*node.w);
-                next_node->rho_fuel = node.rho_fuel + drhodt;
+                drhodt = -(node->rho_fuel*(dudx+dvdy+dwdz)+drhodx*node->u+drhody*node->v+drhodz*node->w);
+                next_node->rho_fuel = node->rho_fuel + drhodt;
                 // std::cout << drhodt << " ";
                 // update rho_co2
                 first_deriv(drhodx,nghbrs[nghbrsInd(-1,0,0)],node,nghbrs[nghbrsInd(1,0,0)],rho_co2,deltax,0.f);
                 first_deriv(drhody,nghbrs[nghbrsInd(0,-1,0)],node,nghbrs[nghbrsInd(0,1,0)],rho_co2,deltay,0.f);
                 first_deriv(drhodz,nghbrs[nghbrsInd(0,0,-1)],node,nghbrs[nghbrsInd(0,0,1)],rho_co2,deltaz,0.f);
-                drhodt = -(node.rho_co2*(dudx+dvdy+dwdz)+drhodx*node.u+drhody*node.v+drhodz*node.w);
-                next_node->rho_co2 = node.rho_co2 + drhodt;
+                drhodt = -(node->rho_co2*(dudx+dvdy+dwdz)+drhodx*node->u+drhody*node->v+drhodz*node->w);
+                next_node->rho_co2 = node->rho_co2 + drhodt;
                 // std::cout << drhodt << " ";
                 // update rho_nox
                 first_deriv(drhodx,nghbrs[nghbrsInd(-1,0,0)],node,nghbrs[nghbrsInd(1,0,0)],rho_nox,deltax,0.f);
                 first_deriv(drhody,nghbrs[nghbrsInd(0,-1,0)],node,nghbrs[nghbrsInd(0,1,0)],rho_nox,deltay,0.f);
                 first_deriv(drhodz,nghbrs[nghbrsInd(0,0,-1)],node,nghbrs[nghbrsInd(0,0,1)],rho_nox,deltaz,0.f);
-                drhodt = -(node.rho_nox*(dudx+dvdy+dwdz)+drhodx*node.u+drhody*node.v+drhodz*node.w);
-                next_node->rho_nox = node.rho_nox + drhodt * deltat;
+                drhodt = -(node->rho_nox*(dudx+dvdy+dwdz)+drhodx*node->u+drhody*node->v+drhodz*node->w);
+                next_node->rho_nox = node->rho_nox + drhodt * deltat;
                 // std::cout << drhodt << " ";
                 // update rho_h2o
                 first_deriv(drhodx,nghbrs[nghbrsInd(-1,0,0)],node,nghbrs[nghbrsInd(1,0,0)],rho_h2o,deltax,0.f);
                 first_deriv(drhody,nghbrs[nghbrsInd(0,-1,0)],node,nghbrs[nghbrsInd(0,1,0)],rho_h2o,deltay,0.f);
                 first_deriv(drhodz,nghbrs[nghbrsInd(0,0,-1)],node,nghbrs[nghbrsInd(0,0,1)],rho_h2o,deltaz,0.f);
-                drhodt = -(node.rho_h2o*(dudx+dvdy+dwdz)+drhodx*node.u+drhody*node.v+drhodz*node.w);
-                next_node->rho_h2o = node.rho_h2o + drhodt * deltat;
+                drhodt = -(node->rho_h2o*(dudx+dvdy+dwdz)+drhodx*node->u+drhody*node->v+drhodz*node->w);
+                next_node->rho_h2o = node->rho_h2o + drhodt * deltat;
                 // std::cout << drhodt << std::endl;
 
                 Node *r0c0 = nghbrs[nghbrsInd(-1,-1,0)];
@@ -283,30 +282,30 @@ void simulateStep(std::vector<Node>& new_nodes,
                 float d2wdz2 = (r0 ? r0->w : 0.f) - 2.f * (r1 ? r1->w : 0.f) + (r2 ? r2->w : 0.f);
                 d2wdz2 /= (deltaz * deltaz);
 
-                float dTxxdx = (2.f*d2udx2 - d2vdxdy - d2wdxdz) * 2.f / 3.f * node.viscosity;
-                float dTyydy = (2.f*d2vdy2 - d2udxdy - d2wdydz) * 2.f / 3.f * node.viscosity;
-                float dTzzdz = (2.f*d2wdz2 - d2udxdz - d2vdydz) * 2.f / 3.f * node.viscosity;
-                float dTxydx = (d2vdx2 + d2udxdy) * node.viscosity;
-                float dTxydy = (d2udy2 + d2vdxdy) * node.viscosity;
-                float dTyzdy = (d2wdy2 + d2vdydz) * node.viscosity;
-                float dTyzdz = (d2vdz2 + d2wdydz) * node.viscosity;
-                float dTxzdx = (d2wdx2 + d2udxdz) * node.viscosity;
-                float dTxzdz = (d2udz2 + d2wdxdz) * node.viscosity;
+                float dTxxdx = (2.f*d2udx2 - d2vdxdy - d2wdxdz) * 2.f / 3.f * node->viscosity;
+                float dTyydy = (2.f*d2vdy2 - d2udxdy - d2wdydz) * 2.f / 3.f * node->viscosity;
+                float dTzzdz = (2.f*d2wdz2 - d2udxdz - d2vdydz) * 2.f / 3.f * node->viscosity;
+                float dTxydx = (d2vdx2 + d2udxdy) * node->viscosity;
+                float dTxydy = (d2udy2 + d2vdxdy) * node->viscosity;
+                float dTyzdy = (d2wdy2 + d2vdydz) * node->viscosity;
+                float dTyzdz = (d2vdz2 + d2wdydz) * node->viscosity;
+                float dTxzdx = (d2wdx2 + d2udxdz) * node->viscosity;
+                float dTxzdz = (d2udz2 + d2wdxdz) * node->viscosity;
 
                 float dpdx, dpdy, dpdz;
-                first_deriv(dpdx,nghbrs[nghbrsInd(-1,0,0)],node,nghbrs[nghbrsInd(1,0,0)],pressure,deltax,node.pressure);
-                first_deriv(dpdy,nghbrs[nghbrsInd(0,-1,0)],node,nghbrs[nghbrsInd(0,1,0)],pressure,deltay,node.pressure);
-                first_deriv(dpdz,nghbrs[nghbrsInd(0,0,-1)],node,nghbrs[nghbrsInd(0,0,1)],pressure,deltaz,node.pressure);
+                first_deriv(dpdx,nghbrs[nghbrsInd(-1,0,0)],node,nghbrs[nghbrsInd(1,0,0)],pressure,deltax,node->pressure);
+                first_deriv(dpdy,nghbrs[nghbrsInd(0,-1,0)],node,nghbrs[nghbrsInd(0,1,0)],pressure,deltay,node->pressure);
+                first_deriv(dpdz,nghbrs[nghbrsInd(0,0,-1)],node,nghbrs[nghbrsInd(0,0,1)],pressure,deltaz,node->pressure);
 
                 float dudt = (-dpdx + dTxxdx + dTxydy + dTxzdz) / rho;
                 float dvdt = (-dpdy + dTxydx + dTyydy + dTyzdz) / rho;
                 float dwdt = (rho*gravity - dpdz + dTxzdx + dTyzdy + dTzzdz) / rho;
 
-                std::cout << "u " << node.u << " v " << node.v << " w " << node.w << " ";
+                std::cout << "u " << node->u << " v " << node->v << " w " << node->w << " ";
                 std::cout << "dudt " << dudt << " dvdt " << dvdt << " dwdt " << dwdt << " ";
-                next_node->u = node.u + dudt * deltat;
-                next_node->v = node.v + dvdt * deltat;
-                next_node->w = node.w + dwdt * deltat;
+                next_node->u = node->u + dudt * deltat;
+                next_node->v = node->v + dvdt * deltat;
+                next_node->w = node->w + dwdt * deltat;
                 std::cout << "u " << next_node->u << " v " << next_node->v << " w " << next_node->w << std::endl;
 
                 float dV = deltax*deltay*deltaz;
@@ -318,12 +317,12 @@ void simulateStep(std::vector<Node>& new_nodes,
                 dEdy *= dV;
                 dEdz *= dV;
 
-                float Txx = (2.f*dudx - dvdy - dwdz) * 2.f/3.f *node.viscosity;
-                float Tyy = (2.f*dvdy - dudx - dwdz) * 2.f/3.f *node.viscosity;
-                float Tzz = (2.f*dwdz - dudx - dvdy) * 2.f/3.f *node.viscosity;
-                float Txy = (dudy + dvdx) * node.viscosity;
-                float Txz = (dudz + dwdx) * node.viscosity;
-                float Tyz = (dvdz + dwdy) * node.viscosity;
+                float Txx = (2.f*dudx - dvdy - dwdz) * 2.f/3.f *node->viscosity;
+                float Tyy = (2.f*dvdy - dudx - dwdz) * 2.f/3.f *node->viscosity;
+                float Tzz = (2.f*dwdz - dudx - dvdy) * 2.f/3.f *node->viscosity;
+                float Txy = (dudy + dvdx) * node->viscosity;
+                float Txz = (dudz + dwdx) * node->viscosity;
+                float Tyz = (dvdz + dwdy) * node->viscosity;
 
                 float dqxdx;
                 float dkdx, dTdx, d2Tdx2;
@@ -334,7 +333,7 @@ void simulateStep(std::vector<Node>& new_nodes,
                 r2 = nghbrs[nghbrsInd(1,0,0)];
                 d2Tdx2 = (r0 ? r0->temperature : boundary_idling_temp) - 2.f * (r1 ? r1->u : boundary_idling_temp) + (r2 ? r2->u : boundary_idling_temp);
                 d2Tdx2 /= (deltax * deltax);
-                dqxdx = dkdx * dTdx + node.conductivity * d2Tdx2;
+                dqxdx = dkdx * dTdx + node->conductivity * d2Tdx2;
 
                 float dqydy;
                 float dkdy, dTdy, d2Tdy2;
@@ -345,7 +344,7 @@ void simulateStep(std::vector<Node>& new_nodes,
                 r2 = nghbrs[nghbrsInd(0,1,0)];
                 d2Tdy2 = (r0 ? r0->temperature : boundary_idling_temp) - 2.f * (r1 ? r1->u : boundary_idling_temp) + (r2 ? r2->u : boundary_idling_temp);
                 d2Tdy2 /= (deltay * deltay);
-                dqydy = dkdy * dTdy + node.conductivity * d2Tdy2;
+                dqydy = dkdy * dTdy + node->conductivity * d2Tdy2;
 
                 float dqzdz;
                 float dkdz, dTdz, d2Tdz2;
@@ -356,23 +355,23 @@ void simulateStep(std::vector<Node>& new_nodes,
                 r2 = nghbrs[nghbrsInd(0,0,1)];
                 d2Tdz2 = (r0 ? r0->temperature : boundary_idling_temp) - 2.f * (r1 ? r1->u : boundary_idling_temp) + (r2 ? r2->u : boundary_idling_temp);
                 d2udz2 /= (deltaz * deltaz);
-                dqzdz = dkdz * dTdz + node.conductivity * d2Tdz2;
+                dqzdz = dkdz * dTdz + node->conductivity * d2Tdz2;
 
-                float dEdt = node.dQdt;
-                dEdt += rho*gravity*node.w;
-                dEdt -= dEdx*node.u + dEdy*node.v + dEdz*node.w + 
-                        node.internal_energy*dV*(dudx + dvdy + dwdz);
-                dEdt -= dpdx*node.u + dpdy*node.v + dpdz*node.w +
-                        node.pressure * (node.u+node.v+node.w);
+                float dEdt = node->dQdt;
+                dEdt += rho*gravity*node->w;
+                dEdt -= dEdx*node->u + dEdy*node->v + dEdz*node->w + 
+                        node->internal_energy*dV*(dudx + dvdy + dwdz);
+                dEdt -= dpdx*node->u + dpdy*node->v + dpdz*node->w +
+                        node->pressure * (node->u+node->v+node->w);
                 dEdt += dudx*Txx + dudy*Txy + dudz * Txz + 
-                        node.u * (dTxxdx + dTxydy + dTxzdz);
+                        node->u * (dTxxdx + dTxydy + dTxzdz);
                 dEdt += dvdx*Txy + dvdy*Tyy + dvdz*Tyz +
-                        node.v * (dTxydx + dTyydy + dTyzdz);
+                        node->v * (dTxydx + dTyydy + dTyzdz);
                 dEdt += dwdx*Txz + dwdy*Tyz + dwdz*Tzz +
-                        node.w * (dTxzdx + dTyzdy + dTzzdz);
+                        node->w * (dTxzdx + dTyzdy + dTzzdz);
                 dEdt -= dqxdx + dqydy + dqzdz;
 
-                next_node->internal_energy = node.internal_energy + dEdt / dV;
+                next_node->internal_energy = node->internal_energy + dEdt / dV;
                 next_node->temperature = internal_energy_to_temperature(next_node->internal_energy);
                 next_node->viscosity = temperature_to_viscosity(next_node->temperature);
                 next_node->conductivity = temperature_to_conductivity(next_node->temperature);
