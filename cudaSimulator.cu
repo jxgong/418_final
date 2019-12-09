@@ -109,7 +109,13 @@ void CudaVisualizer::simulateSteps(){
                  (nodeLength + 15)/16,
                  (nodeDepth + 3)/4);
     for(int i = 0; i < numIterations; i++){
+        double startTime = CycleTimer::currentSeconds();
         kernelSimStep<<<blockDim, gridDim>>>();
+        cudaMemcpy(cuNodes, cuNewNodes,
+                   nodeSize * sizeof(Node),
+                   cudaMemcpyDeviceToDevice);
+        double endTime = CycleTimer::currentSeconds();
+        printf("iteration %d took %f seconds on CUDA\n", i, endTime-startTime);
     }
     return;
 }
