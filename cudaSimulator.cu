@@ -12,11 +12,11 @@
 
 
 __constant__ int PRESSURE_LOWER_BOUND = 0.f;
-__constant__ int PRESSURE_UPPER_BOUND = 100.f;
-__constant__ int TEMP_UPPER_BOUND = 100.f;
-__constant__ int TEMP_LOWER_BOUND = 0.f;
+__constant__ int PRESSURE_UPPER_BOUND = 10.f;
+__constant__ int TEMP_UPPER_BOUND = 473.f;
+__constant__ int TEMP_LOWER_BOUND = 273.f;
 __constant__ int ENERGY_LOWER_BOUND = 0.f;
-__constant__ int ENERGY_UPPER_BOUND = 100.f;
+__constant__ int ENERGY_UPPER_BOUND = 1.f;
 //TODO: check if these bounds are reasonable.
 
 struct GlobalConstants{
