@@ -11,6 +11,7 @@ class CudaVisualizer {
         int nodeWidth;
         int nodeLength;
         int nodeDepth;
+        float dx, dy, dz, dt;
         int nodeSize;
         int numIterations;
 

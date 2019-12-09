@@ -11,13 +11,6 @@
 #include "cudaSimulator.h"
 
 
-void simulateStepCuda(std::vector<Node>& new_nodes,
-                      std::vector<Node>& nodes,
-                      const stepParams params);
-// StartupOptions parseOptions(int argc, char** argv);
-// std::vector<Node> loadFromFile(std::string filename);
-// bool saveToFile(std::vector<Node>, std::string filename);
-
 
 void simulateStep(std::vector<Node>& new_nodes,
                   std::vector<Node>& nodes,

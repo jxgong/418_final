@@ -25,6 +25,7 @@ struct GlobalConstants{
     float* imageData;
     
     int nodeWidth, nodeLength, nodeDepth;
+    float dx, dy, dz, dt;
     Node* nodes;
     Node* newNodes;
 };
@@ -32,7 +33,51 @@ struct GlobalConstants{
 __constant__ GlobalConstants cuImageData;
 
 __global__ void kernelSimStep(){
-    return;
+    int nodeX = blockIdx.x * blockDim.x + threadIdx.x;
+    int nodeY = blockIdx.y * blockDim.y + threadIdx.y;
+    int nodeZ = blockIdx.z * blockDim.z + threadIdx.z;
+    int nodeIdx = nodeX + params.nodeLength * (nodeY + nodeWidth * nodeZ);
+    if (!((params.nodes[index].temperature >= fuel_autoignition_point) || 
+            (params.nodes[index].temperature >= fuel_flash_point &&
+            sparks.find(index) != sparks.end()))){ 
+                //TODO: check if ^this works
+        return;
+    }
+    float rho_o2 = params.nodes[index].rho_o2;
+    float nV_o2 = rho_o2 / o2_molar_mass;
+    float rho_fuel = params.nodes[index].rho_fuel;
+    float nV_fuel = rho_fuel / fuel_molar_mass;
+
+    float delta_o2, delta_n2, delta_fuel, delta_co2, delta_nox, delta_h2o;
+    if (2.f*nV_o2 >= 25.f*nV_fuel){
+        // reaction is limited by fuel
+        delta_fuel = -reaction_rate_coefficient * nV_fuel * deltat;
+        delta_o2 = -reaction_rate_coefficient * nV_o2 * deltat;
+        delta_nox = -(2.f*delta_o2 - 25.f*delta_fuel);
+    }
+    else{
+        // reaction is limited by air
+        delta_o2 = -reaction_rate_coefficient * nV_o2 * deltat;
+        delta_fuel = delta_o2 / 12.5f;
+        delta_nox = 0.f;
+    }
+    delta_co2 = -delta_fuel * 8.f;
+    delta_h2o = -delta_fuel * 9.f;
+    delta_n2 = -delta_nox / 2.f;
+
+    params.nodes[index].rho_o2 += delta_o2 * o2_molar_mass;
+    params.nodes[index].rho_n2 += delta_n2 * n2_molar_mass;
+    params.nodes[index].rho_fuel += delta_fuel * fuel_molar_mass;
+    params.nodes[index].rho_co2 += delta_co2 * co2_molar_mass;
+    params.nodes[index].rho_nox += delta_nox * nox_molar_mass;
+    params.nodes[index].rho_h2o += delta_h2o * h2o_molar_mass;
+
+    params.nodes[index].dQdt = -delta_o2 * o2_formation_enthalpy
+                        -delta_n2 * n2_formation_enthalpy
+                        -delta_fuel * fuel_formation_enthalpy
+                        -delta_co2 * co2_formation_enthalpy
+                        -delta_nox * nox_formation_enthalpy
+                        -delta_h2o * h2o_formation_enthalpy;
 }
 
 __device__ __inline__ float4 shadePixel(int nodeIdx, float4 pixel){
@@ -154,6 +199,10 @@ CudaVisualizer::CudaVisualizer(){
     nodeLength = 0;
     nodeDepth = 0;
     nodeSize = 0;
+    dy = 0;
+    dz = 0;
+    dt = 0;
+    dx = 0;
 
     cuImage = NULL;
     cuNodes = NULL;
@@ -190,6 +239,10 @@ CudaVisualizer::init(){
     params.nodeDepth = nodeDepth;
     params.nodes = cuNodes;
     params.newNodes = cuNewNodes;
+    params.dx = dx;
+    params.dy = dy;
+    params.dz = dz;
+    params.dt = dt;
 
     cudaMemcpyToSymbol(cuImageData, &params, sizeof(GlobalConstants));
     cudaMemcpy(cuNodes, nodes, sizeof(Node) * nodeSize,
@@ -214,6 +267,10 @@ CudaVisualizer::setParams(std::vector<Node>& new_nodes,
     nodeWidth = params.width;
     nodeLength = params.length;
     nodeDepth = params.depth;
+    dx = params.deltax;
+    dy = params.deltay;
+    dz = params.deltaz;
+    dt = params.deltat;
     numIterations = iterations;
 }
 
