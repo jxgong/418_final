@@ -31,6 +31,7 @@ class CudaVisualizer {
                         int iterations);
         void shade();
         void init();
+        std::vector<Node> getNodes();
 };
 
 #endif

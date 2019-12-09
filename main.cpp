@@ -394,6 +394,7 @@ int main(int argc, char *argv[]){
     // StartupOptions options = parseOptions(argc, argv);
     stepParams params;
     int numIterations = 0;
+    bool cudaFlag = true;
     std::vector<Node> newNodes;
     std::unordered_set<int> sparks;
     std::unordered_set<int> empty_set;
@@ -402,12 +403,20 @@ int main(int argc, char *argv[]){
     std::cout << "Sparks has size: " << sparks.size() << std::endl;
     newNodes.resize(nodes.size());
     CudaVisualizer* visualizer = new CudaVisualizer();
-    for (int i = 0; i < numIterations; i++){
-        double startTime = CycleTimer::currentSeconds();
-        simulateStep(newNodes, nodes, params,sparkStart <= i && i < sparkEnd ? sparks : empty_set);
-        double endTime = CycleTimer::currentSeconds();
+    if (cudaFlag){
+        visualizer->setParams(nodes, params, numIterations);
+        visualizer->simulateSteps();
+        newNodes = visualizer->getNodes();
         nodes.swap(newNodes);
-        printf("iteration %d took %f seconds\n", i, endTime-startTime);
+    }
+    else{
+        for (int i = 0; i < numIterations; i++){
+            double startTime = CycleTimer::currentSeconds();
+            simulateStep(newNodes, nodes, params,sparkStart <= i && i < sparkEnd ? sparks : empty_set);
+            double endTime = CycleTimer::currentSeconds();
+            nodes.swap(newNodes);
+            printf("iteration %d took %f seconds\n", i, endTime-startTime);
+        }
     }
     visualizer->setParams(newNodes, params, numIterations);
     double renderStart = CycleTimer::currentSeconds();

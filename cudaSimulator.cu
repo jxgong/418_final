@@ -32,8 +32,7 @@ struct GlobalConstants{
 
 __constant__ GlobalConstants cuImageData;
 
-__device__ __inline__ int getNodeIdx(int x, int y, int z)
-{
+__device__ __inline__ int getNodeIdx(int x, int y, int z){
     return x + cuImageData.nodeLength * (y + cuImageData.nodeWidth * z);
 }
 
@@ -410,6 +409,18 @@ __device__ __inline__ float4 shadePixel(int nodeIdx, float4 pixel){
     return make_float4(r, g, b, 255.f);
 }
 
+__global__ void kernelCopyNodes(){
+    int nodeX = blockIdx.x * blockDim.x + threadIdx.x;
+    int nodeY = blockIdx.y * blockDim.y + threadIdx.y;
+    int nodeZ = blockIdx.z * blockDim.z + threadIdx.z;
+    if (nodeX >= cuImageData.nodeLength || nodeY >= cuImageData.nodeWidth
+                    || nodeZ >= cuImageData.nodeDepth){
+        return;
+    }
+    int nodeIdx = getNodeIdx(nodeX, nodeY, nodeZ);
+    cuImageData.nodes[nodeIdx] = cuImageData.newNodes[nodeIdx];
+}
+
 __global__ void kernelRenderImage(){
     int imageX = blockIdx.x * blockDim.x + threadIdx.x;
     int imageY = blockIdx.y * blockDim.y + threadIdx.y;
@@ -469,14 +480,25 @@ void CudaVisualizer::simulateSteps(){
         double startTime = CycleTimer::currentSeconds();
         kernelSpark<<<blockDim, gridDim>>>();
         kernelSimStep<<<blockDim, gridDim>>>();
-        cudaMemcpy(cuNodes, cuNewNodes,
-                   nodeSize * sizeof(Node),
-                   cudaMemcpyDeviceToDevice);
+        kernelCopyNodes<<<blockDim, gridDim>>>();
+        cudaError_t errCode = cudaPeekAtLastError();
+        if (errCode != cudaSuccess) {
+            fprintf(stderr, "WARNING: A CUDA error occured on iteration %d: code=%d, %s\n", i, errCode, cudaGetErrorString(errCode));
+        }
         double endTime = CycleTimer::currentSeconds();
         printf("iteration %d took %f seconds on CUDA\n", i, endTime-startTime);
     }
+    cudaMemcpy(&nodes, cuNewNodes, nodeSize * sizeof(Node),
+                cudaMemcpyDeviceToHost);
     return;
 }
+
+std::vector<Node>
+CudaVisualizer::getNodes(){
+    const std::vector<Node> res (nodes, nodes+nodeSize);
+    return res;
+}
+
 void
 CudaVisualizer::allocOutputImage(){
     if (image) delete image;
