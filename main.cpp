@@ -10,22 +10,6 @@
 #include "CycleTimer.h"
 #include "cudaSimulator.h"
 
-#define first_deriv(varname,prev,curr,next,field,delta, default_value)\
-                if (prev && next){ \
-                    varname = ((next)->field - (prev)->field) / (2.f*(delta)); \
-                } \
-                else if (prev){ \
-                    varname = (2.f*(default_value) - (curr)->field - (prev)->field) / (2.f*(delta));\
-                } \
-                else if (next){ \
-                    varname = ((next)->field + (curr)->field - 2.f*(default_value)) / (2.f*(delta));\
-                } \
-                else{ \
-                    varname = 0.f; \
-                }
-
-#define dim2Index(x,y,z,Lx,Ly) ((x) + ((y)*(Lx)) + ((z)*(Lx)*(Ly)))
-#define nghbrsInd(x,y,z) (((x)+1) + 3 * ((y)+1) + 9 * ((z)+1))
 
 void simulateStepCuda(std::vector<Node>& new_nodes,
                       std::vector<Node>& nodes,
@@ -301,12 +285,12 @@ void simulateStep(std::vector<Node>& new_nodes,
                 float dvdt = (-dpdy + dTxydx + dTyydy + dTyzdz) / rho;
                 float dwdt = (rho*gravity - dpdz + dTxzdx + dTyzdy + dTzzdz) / rho;
 
-                std::cout << "u " << node->u << " v " << node->v << " w " << node->w << " ";
-                std::cout << "dudt " << dudt << " dvdt " << dvdt << " dwdt " << dwdt << " ";
+                // std::cout << "u " << node->u << " v " << node->v << " w " << node->w << " ";
+                // std::cout << "dudt " << dudt << " dvdt " << dvdt << " dwdt " << dwdt << " ";
                 next_node->u = node->u + dudt * deltat;
                 next_node->v = node->v + dvdt * deltat;
                 next_node->w = node->w + dwdt * deltat;
-                std::cout << "u " << next_node->u << " v " << next_node->v << " w " << next_node->w << std::endl;
+                // std::cout << "u " << next_node->u << " v " << next_node->v << " w " << next_node->w << std::endl;
 
                 float dV = deltax*deltay*deltaz;
                 float dEdx, dEdy, dEdz;
@@ -400,7 +384,10 @@ int main(int argc, char *argv[]){
         printf("iteration %d took %f seconds\n", i, endTime-startTime);
     }
     CudaVisualizer* visualizer = new CudaVisualizer();
+    double renderStart = CycleTimer::currentSeconds();
     visualizer->render(newNodes, params);
+    double renderEnd = CycleTimer::currentSeconds();
+    printf("rendering took %f seconds \n", renderEnd-renderStart);
     saveToFile(newNodes, "output.txt");
     return 0;
 }

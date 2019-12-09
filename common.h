@@ -5,6 +5,23 @@
 #include <string>
 #include <vector>
 
+#define first_deriv(varname,prev,curr,next,field,delta, default_value)\
+                if (prev && next){ \
+                    varname = ((next)->field - (prev)->field) / (2.f*(delta)); \
+                } \
+                else if (prev){ \
+                    varname = (2.f*(default_value) - (curr)->field - (prev)->field) / (2.f*(delta));\
+                } \
+                else if (next){ \
+                    varname = ((next)->field + (curr)->field - 2.f*(default_value)) / (2.f*(delta));\
+                } \
+                else{ \
+                    varname = 0.f; \
+                }
+
+#define dim2Index(x,y,z,Lx,Ly) ((x) + ((y)*(Lx)) + ((z)*(Lx)*(Ly)))
+#define nghbrsInd(x,y,z) (((x)+1) + 3 * ((y)+1) + 9 * ((z)+1))
+
 class Node
 { 
     public:

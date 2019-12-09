@@ -220,7 +220,10 @@ CudaVisualizer::render(std::vector<Node>& new_nodes,
     }
     init();
     clearImage();
+    double startTime = CycleTimer::currentSeconds();
     shade();
+    double endTime = CycleTimer::currentSeconds();
+    printf("shading took %f seconds\n", endTime-startTime);
     writePPMImage(getImage(), "imageOutput.ppm");
     return;
 }
