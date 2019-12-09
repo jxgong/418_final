@@ -11,20 +11,6 @@
 #include "CycleTimer.h"
 #include "cudaSimulator.h"
 
-#define first_deriv_product(varname,prev,curr,next,field1,field2,delta,default_value)\
-                if (prev && next){ \
-                    varname = ((((next)->field1)*((next)->field2)) - (((prev)->field1)*((prev)->field2)) ) / (2.f*(delta)); \
-                } \
-                else if (prev){ \
-                    varname = (2.f*(default_value) - (((curr)->field1)*((curr)->field2)) - (((prev)->field1)*((prev)->field2)) ) / (2.f*(delta));\
-                } \
-                else if (next){ \
-                    varname = ((((next)->field1)*((next)->field2)) + (((curr)->field1)*((curr)->field2)) - 2.f*(default_value) ) / (2.f*(delta));\
-                } \
-                else{ \
-                    varname = 0.f; \
-                }
-
 
 void simulateStep(std::vector<Node>& new_nodes,
                   std::vector<Node>& nodes,
@@ -394,8 +380,8 @@ void simulateStep(std::vector<Node>& new_nodes,
                 next_node->viscosity = temperature_to_viscosity(next_node->temperature);
                 next_node->conductivity = temperature_to_conductivity(next_node->temperature);
                 next_node->pressure = calculate_pressure(next_node);
-                // std::cout << "old_temperature " << node->temperature << " new_temperature " << next_node->temperature << std::endl; 
-                // std::cout << "old_pressure " << node->pressure << " new_pressure " << next_node->pressure << std::endl; 
+                std::cout << "old_temperature " << node->temperature << " new_temperature " << next_node->temperature << std::endl; 
+                std::cout << "old_pressure " << node->pressure << " new_pressure " << next_node->pressure << std::endl; 
             }
             
         }

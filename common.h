@@ -22,6 +22,20 @@
 #define dim2Index(x,y,z,Lx,Ly) ((x) + ((y)*(Lx)) + ((z)*(Lx)*(Ly)))
 #define nghbrsInd(x,y,z) (((x)+1) + 3 * ((y)+1) + 9 * ((z)+1))
 
+#define first_deriv_product(varname,prev,curr,next,field1,field2,delta,default_value)\
+                if (prev && next){ \
+                    varname = ((((next)->field1)*((next)->field2)) - (((prev)->field1)*((prev)->field2)) ) / (2.f*(delta)); \
+                } \
+                else if (prev){ \
+                    varname = (2.f*(default_value) - (((curr)->field1)*((curr)->field2)) - (((prev)->field1)*((prev)->field2)) ) / (2.f*(delta));\
+                } \
+                else if (next){ \
+                    varname = ((((next)->field1)*((next)->field2)) + (((curr)->field1)*((curr)->field2)) - 2.f*(default_value) ) / (2.f*(delta));\
+                } \
+                else{ \
+                    varname = 0.f; \
+                }
+
 class Node
 { 
     public:
