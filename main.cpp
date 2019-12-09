@@ -8,6 +8,7 @@
 #include <unordered_set>
 
 #include "CycleTimer.h"
+#include "cudaSimulator.h"
 
 #define first_deriv(varname,prev,curr,next,field,delta, default_value)\
                 if (prev && next){ \
@@ -398,6 +399,8 @@ int main(int argc, char *argv[]){
         nodes.swap(newNodes);
         printf("iteration %d took %f seconds\n", i, endTime-startTime);
     }
+    CudaVisualizer* visualizer = new CudaVisualizer();
+    visualizer->render(newNodes, params);
     saveToFile(newNodes, "output.txt");
     return 0;
 }

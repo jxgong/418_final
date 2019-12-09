@@ -4,6 +4,7 @@
 #include "image.h"
 #include "CycleTimer.h"
 #include "cudaSimulator.h"
+#include "ppm.h"
 
 #include <cuda.h>
 #include <cuda_runtime.h>
@@ -27,6 +28,8 @@ struct GlobalConstants{
     float* pressure;
     float* temperature;
     float* internal_energy;
+
+    Node* nodes;
 };
 
 __constant__ GlobalConstants cuImageData;
@@ -36,9 +39,10 @@ __global__ void kernelSimSteps(){
 }
 
 __device__ __inline__ float4 shadePixel(int nodeIdx, float4 pixel){
-    float pressure = cuImageData.pressure[nodeIdx];
-    float temperature = cuImageData.temperature[nodeIdx];
-    float internal_energy = cuImageData.internal_energy[nodeIdx];
+    Node curr_node = cuImageData.nodes[nodeIdx];
+    float pressure = curr_node.pressure;
+    float temperature = curr_node.temperature;
+    float internal_energy = curr_node.internal_energy;
     float r = (pressure < PRESSURE_LOWER_BOUND ? 0.f : 
                ((pressure > PRESSURE_UPPER_BOUND) ? 255.f :
                (255.f * (pressure - PRESSURE_LOWER_BOUND))));
@@ -109,9 +113,9 @@ void simulateStepCuda(std::vector<Node>& new_nodes,
     return;
 }
 void
-CudaVisualizer::allocOutputImage(int length, int width){
+CudaVisualizer::allocOutputImage(){
     if (image) delete image;
-    image = new Image(width, length);
+    image = new Image(nodeWidth, nodeLength);
     return;
 }
 
@@ -135,13 +139,40 @@ CudaVisualizer::shade(){
     return;
 }
 
+CudaVisualizer::CudaVisualizer(){
+    image = NULL;
+    // std::vector<Node>& new_nodes;
+    nodes = NULL;
+    
+    nodeWidth = 0;
+    nodeLength = 0;
+    nodeDepth = 0;
+    nodeSize = 0;
+
+    cuImage = NULL;
+    cuPressure=NULL;
+    cuInternalEnergy = NULL;
+    cuNodes = NULL;
+}
+
+CudaVisualizer::~CudaVisualizer(){
+    if (image) delete image;
+    if (nodes) delete nodes;
+    if (cuImage){
+        cudaFree(cuImage);
+        cudaFree(cuPressure);
+        cudaFree(cuInternalEnergy);
+        cudaFree(cuNodes);
+    }
+}
 
 void
 CudaVisualizer::init(){
     cudaMalloc(&cuImage, 4 * sizeof(float) * image->width * image->height);
-    cudaMalloc(&cuPressure, sizeof(float) * nodes.size());
-    cudaMalloc(&cuTemp, sizeof(float) * nodes.size());
-    cudaMalloc(&cuInternalEnergy, sizeof(float) * nodes.size());
+    cudaMalloc(&cuPressure, sizeof(float) * nodeSize);
+    cudaMalloc(&cuTemp, sizeof(float) * nodeSize);
+    cudaMalloc(&cuInternalEnergy, sizeof(float) * nodeSize);
+    cudaMalloc(&cuNodes, sizeof(Node) * nodeSize);
 
     GlobalConstants params;
     params.imageWidth = image->width;
@@ -150,19 +181,46 @@ CudaVisualizer::init(){
     params.pressure = cuPressure;
     params.temperature = cuTemp;
     params.internal_energy = cuInternalEnergy;
-    params.nodeWidth = step_params.width;
-    params.nodeLength = step_params.length;
-    params.nodeDepth = step_params.depth;
+    params.nodeWidth = nodeWidth;
+    params.nodeLength = nodeLength;
+    params.nodeDepth = nodeDepth;
+    params.nodes = cuNodes;
 
     cudaMemcpyToSymbol(cuImageData, &params, sizeof(GlobalConstants));
+    cudaMemcpy(cuNodes, nodes, sizeof(Node) * nodeSize,
+                cudaMemcpyHostToDevice);
 }
+
+const Image*
+CudaVisualizer::getImage(){
+    cudaMemcpy(
+        image->data, cuImage, sizeof(float) * 4 * image->width * image->height,
+        cudaMemcpyDeviceToHost
+    );
+    return image;
+}
+
+void
+CudaVisualizer::setParams(std::vector<Node>& new_nodes,
+                          const stepParams params){
+    nodes = &new_nodes[0];
+    nodeSize = new_nodes.size();
+    nodeWidth = params.width;
+    nodeLength = params.length;
+    nodeDepth = params.depth;
+}
+
+
 void 
-CudaVisualizer::render(std::vector<Node>& nodes,
+CudaVisualizer::render(std::vector<Node>& new_nodes,
                         const stepParams params){
+    setParams(new_nodes, params);
     if (!image){
-        allocOutputImage(params.length, params.width);
+        allocOutputImage();
     }
+    init();
     clearImage();
     shade();
+    writePPMImage(getImage(), "imageOutput.ppm");
     return;
 }

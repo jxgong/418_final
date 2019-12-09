@@ -10,7 +10,7 @@ FRAMEWORKS :=
 LDFLAGS=-L/usr/local/depot/cuda-8.0/lib64/ -lcudart
 # LIBS += GL glut cudart
 OBJS = $(OBJDIR)/main.o  $(OBJDIR)/cudaSimulator.o $(OBJDIR)/common.o\
-	   $(OBJDIR)/physics.o $(OBJDIR)/fileio.o
+	   $(OBJDIR)/physics.o $(OBJDIR)/fileio.o $(OBJDIR)/ppm.o
 
 LDLIBS  := $(addprefix -l, $(LIBS))
 LDFRAMEWORKS := $(addprefix -framework , $(FRAMEWORKS))
@@ -22,10 +22,10 @@ dirs:
 output: dirs $(OBJS) 
 	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS) $(LDFRAMEWORKS)
 
-$(OBJDIR)/%.o: %.cu cudaSimulator.h
+$(OBJDIR)/%.o: %.cu cudaSimulator.h ppm.h
 	$(NVCC) $< $(NVCCFLAGS) -c -o $@
 
-$(OBJDIR)/%.o: %.cpp physics.h
+$(OBJDIR)/%.o: %.cpp physics.h util.h cudaSimulator.h
 	$(CXX) $< $(CXXFLAGS) -c -o $@
 
 clean:
