@@ -33,7 +33,7 @@ class Node
         // dynamic properties
         float u, v, w; 
         // thermal properties
-        float dQdt;
+        float dQ;
         float get_rho();
 
 };

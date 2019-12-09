@@ -4,9 +4,10 @@
 #include <sstream>
 #include <iostream>
 #include <iomanip>
+#include <unordered_set>
 #include "common.h"
 
-std::vector<Node> loadFromFile(std::string filename, stepParams *params, int *num_iterations){
+std::vector<Node> loadFromFile(std::string filename, stepParams *params, int *num_iterations, std::unordered_set<int> *sparks,int *sparkStart, int *sparkEnd){
     std::ifstream inFile;
     inFile.open(filename);
     std::string line;
@@ -38,9 +39,20 @@ std::vector<Node> loadFromFile(std::string filename, stepParams *params, int *nu
         inFile >> node.u;
         inFile >> node.v;
         inFile >> node.w;
-        node.dQdt = 0.f;
+        node.dQ = 0.f;
         result.push_back(node);
     }
+    int sparkLen;
+    inFile >> sparkLen;
+    inFile >> *sparkStart;
+    inFile >> *sparkEnd;
+    for (int i = 0; i < sparkLen; i++){
+        int sparkPos;
+        inFile >> sparkPos;
+        (*sparks).insert(sparkPos);
+    }
+    std::cout << "Sparks has size: " << (*sparks).size() << std::endl;
+
     return result;
 }
 
@@ -55,12 +67,20 @@ bool saveToFile(std::vector<Node> data, std::string filename){
     Node curr_node;
     for (unsigned int i = 0; i < data.size(); i++){
         curr_node = data.at(i);
-        file << curr_node.rho_o2 << " " << curr_node.rho_n2 << " "
-            << curr_node.rho_fuel << " " << curr_node.rho_co2 << " " 
-            << curr_node.rho_nox << " " << curr_node.rho_h2o << " " 
-            << curr_node.pressure << " " << curr_node.temperature << " " 
-            << curr_node.viscosity << " " << curr_node.internal_energy << " "
-            << curr_node.conductivity << std::endl;
+
+        file << curr_node.rho_o2 << " " 
+             << curr_node.rho_n2 << " "
+             << curr_node.rho_fuel << " " 
+             << curr_node.rho_co2 << " " 
+             << curr_node.rho_nox << " " 
+             << curr_node.rho_h2o << " " 
+             << curr_node.pressure << " " 
+             << curr_node.temperature << " " 
+             << curr_node.internal_energy << " "
+             << curr_node.viscosity << " " 
+             << curr_node.u << " " 
+             << curr_node.w
+             << " " << curr_node.v << std::endl;
     }
     file.close();
     return true;

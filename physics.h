@@ -8,7 +8,7 @@
 #define universal_gas_constant 8.314f
 #define fuel_flash_point 286.1f 
 #define fuel_autoignition_point 493.1f
-#define reaction_rate_coefficient 0.2f
+#define reaction_rate_coefficient 5.f
 #define boundary_conductivity 121.f
 #define boundary_specific_heat 795.f
 #define boundary_idling_temp 375.f
@@ -28,7 +28,7 @@
 float calculate_pressure(Node *node);
 float temperature_to_viscosity(float temp);
 float temperature_to_conductivity(float temp);
-float internal_energy_to_temperature(float temperature);
+float internal_energy_to_temperature(Node *node);
 float o2_enthalpy(float temperature);
 float temperature_to_internal_energy(float temperature);
 
