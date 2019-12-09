@@ -36,28 +36,30 @@ __global__ void kernelSimStep(){
     int nodeX = blockIdx.x * blockDim.x + threadIdx.x;
     int nodeY = blockIdx.y * blockDim.y + threadIdx.y;
     int nodeZ = blockIdx.z * blockDim.z + threadIdx.z;
-    int nodeIdx = nodeX + params.nodeLength * (nodeY + nodeWidth * nodeZ);
-    if (!((params.nodes[index].temperature >= fuel_autoignition_point) || 
-            (params.nodes[index].temperature >= fuel_flash_point &&
-            sparks.find(index) != sparks.end()))){ 
+    int nodeIdx = nodeX + cuImageData.nodeLength * (nodeY + 
+                            cuImageData.nodeWidth * nodeZ);
+    if (!((cuImageData.nodes[nodeIdx].temperature >= fuel_autoignition_point) || 
+            (cuImageData.nodes[nodeIdx].temperature >= fuel_flash_point &&
+            true))){
+            // sparks.find(index) != sparks.end()))){ 
                 //TODO: check if ^this works
         return;
     }
-    float rho_o2 = params.nodes[index].rho_o2;
+    float rho_o2 = cuImageData.nodes[nodeIdx].rho_o2;
     float nV_o2 = rho_o2 / o2_molar_mass;
-    float rho_fuel = params.nodes[index].rho_fuel;
+    float rho_fuel = cuImageData.nodes[nodeIdx].rho_fuel;
     float nV_fuel = rho_fuel / fuel_molar_mass;
 
     float delta_o2, delta_n2, delta_fuel, delta_co2, delta_nox, delta_h2o;
     if (2.f*nV_o2 >= 25.f*nV_fuel){
         // reaction is limited by fuel
-        delta_fuel = -reaction_rate_coefficient * nV_fuel * deltat;
-        delta_o2 = -reaction_rate_coefficient * nV_o2 * deltat;
+        delta_fuel = -reaction_rate_coefficient * nV_fuel * cuImageData.dt;
+        delta_o2 = -reaction_rate_coefficient * nV_o2 * cuImageData.dt;
         delta_nox = -(2.f*delta_o2 - 25.f*delta_fuel);
     }
     else{
         // reaction is limited by air
-        delta_o2 = -reaction_rate_coefficient * nV_o2 * deltat;
+        delta_o2 = -reaction_rate_coefficient * nV_o2 * cuImageData.dt;
         delta_fuel = delta_o2 / 12.5f;
         delta_nox = 0.f;
     }
@@ -65,14 +67,14 @@ __global__ void kernelSimStep(){
     delta_h2o = -delta_fuel * 9.f;
     delta_n2 = -delta_nox / 2.f;
 
-    params.nodes[index].rho_o2 += delta_o2 * o2_molar_mass;
-    params.nodes[index].rho_n2 += delta_n2 * n2_molar_mass;
-    params.nodes[index].rho_fuel += delta_fuel * fuel_molar_mass;
-    params.nodes[index].rho_co2 += delta_co2 * co2_molar_mass;
-    params.nodes[index].rho_nox += delta_nox * nox_molar_mass;
-    params.nodes[index].rho_h2o += delta_h2o * h2o_molar_mass;
+    cuImageData.nodes[nodeIdx].rho_o2 += delta_o2 * o2_molar_mass;
+    cuImageData.nodes[nodeIdx].rho_n2 += delta_n2 * n2_molar_mass;
+    cuImageData.nodes[nodeIdx].rho_fuel += delta_fuel * fuel_molar_mass;
+    cuImageData.nodes[nodeIdx].rho_co2 += delta_co2 * co2_molar_mass;
+    cuImageData.nodes[nodeIdx].rho_nox += delta_nox * nox_molar_mass;
+    cuImageData.nodes[nodeIdx].rho_h2o += delta_h2o * h2o_molar_mass;
 
-    params.nodes[index].dQdt = -delta_o2 * o2_formation_enthalpy
+    cuImageData.nodes[nodeIdx].dQ = -delta_o2 * o2_formation_enthalpy
                         -delta_n2 * n2_formation_enthalpy
                         -delta_fuel * fuel_formation_enthalpy
                         -delta_co2 * co2_formation_enthalpy

@@ -43,20 +43,20 @@ void simulateStep(std::vector<Node>& new_nodes,
         for (int j = 0; j < width; j++){
             for (int i = 0; i < length; i++){
                 int index = i + length * (j + width * (k));
-                Node *node = &nodes[index];
-                std::cout << node->rho_o2 << " " <<
-                             node->rho_n2 << " " <<
-                             node->rho_fuel << " " <<
-                             node->rho_co2 << " " <<
-                             node->rho_nox << " " << 
-                             node->rho_h2o << " " <<
-                             node->pressure << " " <<
-                             node->temperature << " " <<
-                             node->viscosity << " internal_energy: " <<
-                             node->internal_energy << " " <<
-                             node->u << " " <<
-                             node->v << " " <<
-                             node->w << std::endl;
+                // Node *node = &nodes[index];
+                // std::cout << node->rho_o2 << " " <<
+                //              node->rho_n2 << " " <<
+                //              node->rho_fuel << " " <<
+                //              node->rho_co2 << " " <<
+                //              node->rho_nox << " " << 
+                //              node->rho_h2o << " " <<
+                //              node->pressure << " " <<
+                //              node->temperature << " " <<
+                //              node->viscosity << " internal_energy: " <<
+                //              node->internal_energy << " " <<
+                //              node->u << " " <<
+                //              node->v << " " <<
+                //              node->w << std::endl;
 
                 if (!((nodes[index].temperature >= fuel_autoignition_point) || 
                       (nodes[index].temperature >= fuel_flash_point &&
@@ -387,7 +387,7 @@ void simulateStep(std::vector<Node>& new_nodes,
                 // dEdt -= dqxdx + dqydy + dqzdz;
 
                 next_node->internal_energy = node->internal_energy + (dEdt / dV) * deltat;
-                if (!index){
+                if (true){
                     std::cout << "old U " << node->internal_energy << " dUdt " << dEdt *dV << " new U " << next_node->internal_energy << " dQ " << node->dQ << std::endl;
                 }
                 next_node->temperature = internal_energy_to_temperature(next_node);
