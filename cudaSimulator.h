@@ -12,21 +12,22 @@ class CudaVisualizer {
         int nodeLength;
         int nodeDepth;
         int nodeSize;
+        int numIterations;
 
         float* cuImage;
-        float* cuPressure;
-        float* cuTemp;
-        float* cuInternalEnergy;
         Node* cuNodes;
+        Node* cuNewNodes;
 
     public:
         CudaVisualizer();
-        ~CudaVisualizer();
+        virtual ~CudaVisualizer();
         const Image* getImage();
         void allocOutputImage();
         void clearImage();
-        void render(std::vector<Node>& nodes, const stepParams params);
-        void setParams(std::vector<Node>& nodes, const stepParams params);
+        void simulateSteps();
+        void render();
+        void setParams(std::vector<Node>& nodes, const stepParams params,
+                        int iterations);
         void shade();
         void init();
 };

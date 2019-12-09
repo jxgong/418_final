@@ -25,16 +25,13 @@ struct GlobalConstants{
     float* imageData;
     
     int nodeWidth, nodeLength, nodeDepth;
-    float* pressure;
-    float* temperature;
-    float* internal_energy;
-
     Node* nodes;
+    Node* newNodes;
 };
 
 __constant__ GlobalConstants cuImageData;
 
-__global__ void kernelSimSteps(){
+__global__ void kernelSimStep(){
     return;
 }
 
@@ -71,7 +68,6 @@ __global__ void kernelRenderImage(){
 
     int nodeIdx;
     for (int z = 0; z < cuImageData.nodeDepth; z++){
-        //TODO: check if i'm mixing up length and width here.
         nodeIdx = imageX + imageY * cuImageData.nodeLength +
                     z * cuImageData.nodeLength * cuImageData.nodeWidth;
         pixel = shadePixel(nodeIdx, pixel);
@@ -101,15 +97,20 @@ __global__ void kernelClearImage(float r, float g, float b, float a){
     *(float4*)(&cuImageData.imageData[offset]) = value;
 }
 
-void simulateStepCuda(std::vector<Node>& new_nodes,
-                      std::vector<Node>& nodes,
-                      const stepParams params){
+void CudaVisualizer::simulateSteps(){
     /*
      * uh i don't think nodes are going to fit into the warps here. Like I'm
      * pretty sure we'll have to move the properties to some array and do
      * with that instead of just passing the structs into the device memory.
      * It might just be easier to do just the visualizer on this. 
      */
+    dim3 blockDim(16, 16, 4);
+    dim3 gridDim((nodeWidth + 15)/16,
+                 (nodeLength + 15)/16,
+                 (nodeDepth + 3)/4);
+    for(int i = 0; i < numIterations; i++){
+        kernelSimStep<<<blockDim, gridDim>>>();
+    }
     return;
 }
 void
@@ -133,15 +134,14 @@ CudaVisualizer::shade(){
     int imageWidth = image->width;
     int imageHeight = image->height;
     dim3 blockDim(32, 32);
-    dim3 chunkDim((imageWidth + 32) / 32,
-                   (imageHeight + 32) / 32);
+    dim3 chunkDim((imageWidth + 31) / 32,
+                   (imageHeight + 31) / 32);
     kernelRenderImage<<<chunkDim, blockDim>>>();
     return;
 }
 
 CudaVisualizer::CudaVisualizer(){
     image = NULL;
-    // std::vector<Node>& new_nodes;
     nodes = NULL;
     
     nodeWidth = 0;
@@ -150,9 +150,8 @@ CudaVisualizer::CudaVisualizer(){
     nodeSize = 0;
 
     cuImage = NULL;
-    cuPressure=NULL;
-    cuInternalEnergy = NULL;
     cuNodes = NULL;
+    cuNewNodes = NULL;
 }
 
 CudaVisualizer::~CudaVisualizer(){
@@ -160,31 +159,31 @@ CudaVisualizer::~CudaVisualizer(){
     if (nodes) delete nodes;
     if (cuImage){
         cudaFree(cuImage);
-        cudaFree(cuPressure);
-        cudaFree(cuInternalEnergy);
         cudaFree(cuNodes);
+        cudaFree(cuNewNodes);
     }
 }
 
 void
 CudaVisualizer::init(){
+    if (cuImage){
+        cudaFree(cuImage);
+        cudaFree(cuNodes);
+        cudaFree(cuNewNodes);
+    }
     cudaMalloc(&cuImage, 4 * sizeof(float) * image->width * image->height);
-    cudaMalloc(&cuPressure, sizeof(float) * nodeSize);
-    cudaMalloc(&cuTemp, sizeof(float) * nodeSize);
-    cudaMalloc(&cuInternalEnergy, sizeof(float) * nodeSize);
     cudaMalloc(&cuNodes, sizeof(Node) * nodeSize);
+    cudaMalloc(&cuNewNodes, sizeof(Node) * nodeSize);
 
     GlobalConstants params;
     params.imageWidth = image->width;
     params.imageHeight = image->height;
     params.imageData = cuImage;
-    params.pressure = cuPressure;
-    params.temperature = cuTemp;
-    params.internal_energy = cuInternalEnergy;
     params.nodeWidth = nodeWidth;
     params.nodeLength = nodeLength;
     params.nodeDepth = nodeDepth;
     params.nodes = cuNodes;
+    params.newNodes = cuNewNodes;
 
     cudaMemcpyToSymbol(cuImageData, &params, sizeof(GlobalConstants));
     cudaMemcpy(cuNodes, nodes, sizeof(Node) * nodeSize,
@@ -202,19 +201,19 @@ CudaVisualizer::getImage(){
 
 void
 CudaVisualizer::setParams(std::vector<Node>& new_nodes,
-                          const stepParams params){
+                          const stepParams params,
+                          int iterations){
     nodes = &new_nodes[0];
     nodeSize = new_nodes.size();
     nodeWidth = params.width;
     nodeLength = params.length;
     nodeDepth = params.depth;
+    numIterations = iterations;
 }
 
 
 void 
-CudaVisualizer::render(std::vector<Node>& new_nodes,
-                        const stepParams params){
-    setParams(new_nodes, params);
+CudaVisualizer::render(){
     if (!image){
         allocOutputImage();
     }

@@ -376,6 +376,7 @@ int main(int argc, char *argv[]){
     std::unordered_set<int> sparks;
     std::vector<Node> nodes = loadFromFile(argv[1],&params,&numIterations);
     newNodes.resize(nodes.size());
+    CudaVisualizer* visualizer = new CudaVisualizer();
     for (int i = 0; i < numIterations; i++){
         double startTime = CycleTimer::currentSeconds();
         simulateStep(newNodes, nodes, params,sparks);
@@ -383,9 +384,10 @@ int main(int argc, char *argv[]){
         nodes.swap(newNodes);
         printf("iteration %d took %f seconds\n", i, endTime-startTime);
     }
-    CudaVisualizer* visualizer = new CudaVisualizer();
+    visualizer->setParams(newNodes, params, numIterations);
     double renderStart = CycleTimer::currentSeconds();
-    visualizer->render(newNodes, params);
+    visualizer->render();
+    // delete visualizer;
     double renderEnd = CycleTimer::currentSeconds();
     printf("rendering took %f seconds \n", renderEnd-renderStart);
     saveToFile(newNodes, "output.txt");
