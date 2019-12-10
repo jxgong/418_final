@@ -35,3 +35,6 @@ We plan to show speedup graphs at the speedup session, and if we manage to get a
 
 Concerns at this point include time management, the fact that I (Jason) still haven't really gotten the concepts needed for fluid dynamics.
 
+## Update 2019-12-09
+
+[Final project is here](https://github.com/jxgong/fuel_ignition_simulator/raw/master/Fuel%20Ignition%20Sim%20Report.pdf)
